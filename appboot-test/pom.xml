@@ -1,0 +1,52 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.descartes</groupId>
+		<artifactId>basic-jsp-embed-parent</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../basic-jsp-embed-parent</relativePath>
+	</parent>
+	<artifactId>appboot-test</artifactId>
+	<version>1.1.0</version>
+	<name>Application Booter Test Jar</name>
+
+	<properties>
+		<manifest.main>com.descartes.appboot.test.AppBootTest</manifest.main>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.descartes</groupId>
+			<artifactId>appboot</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>${manifest.main}</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
