@@ -36,5 +36,24 @@
 		<url-pattern>/index.html</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>JmxAgent</servlet-name>
+		<servlet-class>com.descartes.basicjsp.embed.demo.JmxAgentServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+		<init-param>
+			<param-name>mbeanQualifier</param-name>
+			<param-value>qualifier=jspdemo</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>JmxAgent</servlet-name>
+		<url-pattern>/pages/jmxagent</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>JmxAgent</servlet-name>
+		<url-pattern>/pages/jmxagent/*</url-pattern>
+	</servlet-mapping>
+
 </web-app>
 	

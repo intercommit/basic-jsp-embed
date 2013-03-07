@@ -30,20 +30,6 @@ ul.tree li.last {
 	background: #fff url(<c:url value="/static/images/lastnode.png"/>) no-repeat;
 }
 </style>
-<script type="text/javascript">
-	window.onload = function() {
-		var tree = document.getElementById("tree");
-		var lists = [ tree ];
-		for ( var i = 0; i < tree.getElementsByTagName("ul").length; i++)
-			lists[lists.length] = tree.getElementsByTagName("ul")[i];
-		for ( var i = 0; i < lists.length; i++) {
-			var item = lists[i].lastChild;
-			while (!item.tagName || item.tagName.toLowerCase() != "li")
-				item = item.previousSibling;
-			item.className += " last";
-		}
-	};
-</script>
 
 <c:choose>
 <c:when test="${empty pageTitle}">
@@ -56,8 +42,16 @@ ul.tree li.last {
 
 <body>
 
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript"> 
+	$(document).ready(function () { 
+		$('ul.tree li:last-child').addClass('last'); 
+	}); 
+</script>
+
 <p>
-Directory tree
+Tomcat directory tree listing.
+<br>Credits go to Michal Wojciechowski for providing the <a href="http://odyniec.net/articles/turning-lists-into-trees/">example</a>
 </p>
 
 <ul class="tree" id="tree">
