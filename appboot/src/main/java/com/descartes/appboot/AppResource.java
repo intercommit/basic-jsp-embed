@@ -92,7 +92,7 @@ public class AppResource {
 			 }
 		}
 		if (appConfDir != null) {
-			System.setProperty(APP_CONF_DIR, endWithSep(getFullPath(appHomeDir)));
+			System.setProperty(APP_CONF_DIR, endWithSep(getFullPath(appConfDir)));
 		}
 		if (debug) {
 			showln("Application home: " + appHomeDir);
