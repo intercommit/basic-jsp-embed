@@ -168,7 +168,7 @@
 					<version>2.2.1</version>
 					<executions>
 						<execution>
-							<phase>install</phase>
+							<phase>verify</phase>
 							<id>attach-sources</id>
 							<goals>
 								<goal>jar-no-fork</goal>
@@ -186,7 +186,7 @@
 					</configuration>
 					<executions>
 						<execution>
-							<phase>install</phase>
+							<phase>verify</phase>
 							<id>attach-javadocs</id>
 							<goals>
 								<goal>jar</goal>
