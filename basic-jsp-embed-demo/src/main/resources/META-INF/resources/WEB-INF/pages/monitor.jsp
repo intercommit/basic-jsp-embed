@@ -1,4 +1,5 @@
 <%@ include file="/includes/mheader.jsp" %> 
+<%@ page session="false" %>
 <body>
 <h2>JMX monitor</h2>
 <p>

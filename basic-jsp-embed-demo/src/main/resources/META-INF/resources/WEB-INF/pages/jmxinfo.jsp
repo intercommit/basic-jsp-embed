@@ -1,4 +1,5 @@
 <%@ include file="/includes/header.jsp" %> 
+<%@ page session="false" %>
 <body>
 <p>
 JMX server info.
