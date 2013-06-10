@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>com.descartes</groupId>
 		<artifactId>basic-jsp-embed-parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>appboot</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<name>Application Booter</name>
 	<description>Starts an application' main class with a boot class loader with all jars found in a lib-directory</description>
 

@@ -39,6 +39,8 @@ import java.util.List;
  * AppBoot also supports a maven test environment so that source code changes can be tested 
  * by running the application from the <code>target/test-classes</code> directory. See also the {@link BootKeys#APP_MAVEN_TEST} property.
  * <p>
+ * Apache Commons Daemon can be used to start/stop an application via AppBoot, see the {@link #stop(String[])} method for more information.
+ * <p>
  * The <code>appboot-test</code> project contains examples on how AppBoot can be used and also contains Maven POM and assembly
  * configurations to allow AppBoot to function in different environments.
  * <br>To build a jar with a main class:<pre>
@@ -287,6 +289,49 @@ public class AppBoot {
 			}
 		}
 		return sysFiles;
+	}
+	
+	/**
+	 * Signals a "stop running as service", for use with Apache Commons Daemon (see http://commons.apache.org/proper/commons-daemon/).
+	 * <br>Re-uses the earlier found main class and created boot classloader.
+	 * If main class is uknown, an error message appears on stderr.
+	 * Example service contents for a myappservice.bat using Commons Daemon:
+<pre>sc delete myapps
+myapps.exe //IS//myapps ^
+--Install="%CD%\myapps.exe" ^
+--StartPath="%CD%" ^
+--Description="MyApp" ^
+--Startup=auto ^
+--Jvm=auto ^
+++JvmOptions=-Dapp.name=myapp ^
+--Classpath=%CD%\lib\appboot.jar ^
+--StartMode=jvm ^
+--StartClass=com.descartes.appboot.AppBoot ^
+++StartParams=-runAsService ^
+--StopMode=jvm ^
+--StopClass=com.descartes.appboot.AppBoot ^
+--StopMethod=stop ^
+++StopParams=-stopService ^
+--StopTimeout=60 ^
+--LogPath="%CD%\logs" ^
+--StdOutput=auto ^
+--StdError=auto
+
+pause</pre>
+	 * In the exampe above, the main class of the application needs to understand the
+	 * arguments <tt>-runAsService</tt> and <tt>-stopService</tt>.
+	 * Also <tt>myapps.exe</tt> is a renamed version of Common Daemons <tt>prunsrv.exe</tt>
+	 * and <tt>myappsw.exe</tt> is a renamed version of Common Daemons <tt>prunmgr.exe</tt>
+	 * (placed in the same directory).
+	 * <br>A call to <tt>System.exit(0)</tt> is usually enough to stop running as a service.
+	 */
+	public static void stop(String[] args) {
+		
+		if (mainClassName == null) {
+			System.err.println("Could not stop application service, application main class is unknown.");
+		} else {
+			runMain(bootClassLoader, mainClassName, "main", args);
+		}
 	}
 	
 }
