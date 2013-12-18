@@ -5,7 +5,7 @@
 <div style="font-size:0.8em; float:right">Version ${appVersion}</div>
 <div style="clear:both"></div>
 <ul><li>
-View <a href="<c:url value="/log"/>">log</a>
+View <a href="${domainRoot}/log">log</a>
 <a href="${domainRoot}/logerror">error</a> messages.
 </li><li>
 View system <a href="${domainRoot}/sysenv">environment</a> settings.
