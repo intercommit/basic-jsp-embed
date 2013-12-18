@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>com.descartes</groupId>
 		<artifactId>basic-jsp-embed-parent</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>basic-jsp-embed-demo</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<name>Demo for Embedded Basic JSP web application</name>
 
 	<properties>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.descartes</groupId>
 			<artifactId>basic-jsp-embed</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.2</version>
 		</dependency>
 		<dependency>
           <groupId>org.jolokia</groupId>
@@ -55,12 +55,40 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-			</plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeArtifactIds>appboot</excludeArtifactIds>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-dependency-appboot</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <stripVersion>true</stripVersion>
+                            <includeArtifactIds>appboot</includeArtifactIds>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
+                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
 					<archive>
 						<manifest>
 							<mainClass>${manifest.main}</mainClass>

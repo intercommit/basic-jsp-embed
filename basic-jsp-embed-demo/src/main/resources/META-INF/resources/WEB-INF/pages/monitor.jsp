@@ -9,7 +9,7 @@ the <a href="http://nurkiewicz.blogspot.nl/2011/03/jolokia-highcharts-jmx-for-hu
 </p>
 
 <script>
-var jolokiaAgentUrl = "<c:url value="/jmxagent"/>"; 
+var jolokiaAgentUrl = "${domainRoot}/jmxagent"; 
 </script>
 
 <div class="portlet ui-widget-content ui-helper-clearfix ui-corner-all" id="portlet-template">
@@ -21,10 +21,10 @@ var jolokiaAgentUrl = "<c:url value="/jmxagent"/>";
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
-<script src="<c:url value="/static/jolokia.js"/>"></script>
-<script src="<c:url value="/static/jolokia-simple.js"/>"></script>
-<script src="<c:url value="/static/highcharts.src.js"/>"></script>
-<script src="<c:url value="/static/jmx-monitor.js"/>"></script>
+<script src="${domainRoot}/static/jolokia.js"></script>
+<script src="${domainRoot}/static/jolokia-simple.js"></script>
+<script src="${domainRoot}/static/highcharts.src.js"></script>
+<script src="${domainRoot}/static/jmx-monitor.js"></script>
 
 </body>
 </html>

@@ -7,25 +7,6 @@
 		<format>dir</format>
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
-	<dependencySets>
-		<dependencySet>
-			<outputDirectory>/lib</outputDirectory>
-			<useProjectArtifact>true</useProjectArtifact>
-			<scope>runtime</scope>
-			<excludes>
-				<exclude>com.descartes:appboot</exclude>
-			</excludes>
-		</dependencySet>
-		<dependencySet>
-			<outputDirectory>/lib</outputDirectory>
-			<useProjectArtifact>true</useProjectArtifact>
-			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
-			<scope>runtime</scope>
-			<includes>
-				<include>com.descartes:appboot</include>
-			</includes>
-		</dependencySet>
-	</dependencySets>
 	<fileSets>
 		<fileSet>
 			<directory>conf</directory>
@@ -35,7 +16,9 @@
 			<directory>scripts</directory>
 			<outputDirectory>/</outputDirectory>
 		</fileSet>
-		<!-- <fileSet> <directory>WebContent</directory> <outputDirectory>/WebContent</outputDirectory> 
-			</fileSet> -->
+        <fileSet>
+            <directory>${project.build.directory}/lib</directory>
+            <outputDirectory>/lib</outputDirectory>
+        </fileSet>
 	</fileSets>
 </assembly>

@@ -1,7 +1,7 @@
 <%@ include file="/includes/header.jsp" %> 
 <%@ page session="false" %>
 <body>
-<p style="float:right">Back to <a href="<c:url value="/"/>">home</a> page.</p>
+<p style="float:right">Back to <a href="${domainRoot}/">home</a> page.</p>
 Memory usage
 <pre>
 <c:out value="${memoryUsage}"/>
@@ -15,6 +15,6 @@ Java system properties
 <c:out value="${systemProps}"/>
 </pre>
 <p>
-Back to <a href="<c:url value="/"/>">home</a> page.</p>
+Back to <a href="${domainRoot}/">home</a> page.</p>
 </body>
 </html>

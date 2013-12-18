@@ -42,6 +42,27 @@ public class WebUtil {
 	protected static Logger log = LoggerFactory.getLogger(WebUtil.class);
 
 	/**
+	 * Constructs the home-page URL as seen by the client.
+	 * <br>Copied from http://stackoverflow.com/questions/2222238/httpservletrequest-to-complete-url
+	 */
+	public static String getAppHomeUrl(HttpServletRequest req) {
+
+		String scheme = req.getScheme();             // http
+		String serverName = req.getServerName();     // hostname.com
+		int serverPort = req.getServerPort();        // 80
+		String contextPath = req.getContextPath();   // /mywebapp
+
+		// Reconstruct original requesting URL
+		StringBuilder url = new StringBuilder();
+		url.append(scheme).append("://").append(serverName);
+		if ((serverPort != 80) && (serverPort != 443)) {
+			url.append(":").append(serverPort);
+		}
+		url.append(contextPath);
+		return url.toString();
+	}
+
+	/**
 	 * Removes the context-path and "/pages" prefix from the request-URL so that only the requested page is returned.
 	 * E.g. <tt>http://localhost/mywebapp/pages/index --&gt; index</tt>
 	 * <br>This method can be used together with the {@link PagesFilter}.

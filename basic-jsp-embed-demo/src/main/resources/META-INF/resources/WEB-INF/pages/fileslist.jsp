@@ -1,7 +1,7 @@
 <%@ include file="/includes/header.jsp" %> 
 <%@ page session="false" %>
 <body>
-<p style="float:right">Back to <a href="<c:url value="/dirtree"/>">directory</a> tree.</p>
+<p style="float:right">Back to <a href="${domainRoot}/dirtree">directory</a> tree.</p>
 
 Files in directory ${path}
 
@@ -15,8 +15,8 @@ Files in directory ${path}
 	</tr>
 	<c:forEach items="${files}" var="file">
 	<tr>
-		<td style="width : 1em"><a href="<c:url value="/openfile"/>?dir=${dirId}&name=${file.nameb64}&action=download"><img src="<c:url value="/static/images/download.png"/>"/></a></td>
-		<td style="width : 1em"><a href="<c:url value="/openfile"/>?dir=${dirId}&name=${file.nameb64}&action=view"><img src="<c:url value="/static/images/eye.png"/>"/></a></td>
+		<td style="width : 1em"><a href="${domainRoot}/openfile?dir=${dirId}&amp;name=${file.nameb64}&amp;action=download"><img src="${domainRoot}/static/images/download.png"/></a></td>
+		<td style="width : 1em"><a href="${domainRoot}/openfile?dir=${dirId}&amp;name=${file.nameb64}&amp;action=view"><img src="${domainRoot}/static/images/eye.png"/></a></td>
 		<td>${file.name}</td>
 		<td>${file.modified}</td>
 		<td style="text-align:right">${file.size}</td>
@@ -25,7 +25,7 @@ Files in directory ${path}
 </table>
 
 <p>
-Back to <a href="<c:url value="/dirtree"/>">directory</a> tree.
+Back to <a href="${domainRoot}/dirtree">directory</a> tree.
 </p>
 
 </body>

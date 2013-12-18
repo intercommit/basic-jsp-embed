@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.descartes</groupId>
 	<artifactId>basic-jsp-embed-parent</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<packaging>pom</packaging>
 
 	<name>Basic JSP embedded Parent</name>
@@ -11,18 +11,11 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<appboot.version>1.1.1</appboot.version>
-		<tomcat.version>7.0.39</tomcat.version>
+		<tomcat.version>7.0.47</tomcat.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<!-- LogBack 1.0.13 depends on Slf4j 1.7.5 -->
 		<logback.version>1.0.13</logback.version>
 	</properties>
-
-	<modules>
-		<module>../appboot</module>
-		<module>../appboot-test</module>
-		<module>../basic-jsp-embed</module>
-		<module>../basic-jsp-embed-demo</module>
-	</modules>
 
 	<dependencyManagement>
 		<dependencies>

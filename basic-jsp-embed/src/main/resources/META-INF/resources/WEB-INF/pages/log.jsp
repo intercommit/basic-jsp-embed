@@ -1,7 +1,7 @@
 <%@ include file="/includes/header.jsp" %> 
 <%@ page session="false" %>
 <body>
-<p style="float:right">Back to <a href="<c:url value="/"/>">home</a> page.</p>
+<p style="float:right">Back to <a href="${domainRoot}/">home</a> page.</p>
 <p>
 ${logTextInfo}
 </p>
@@ -9,7 +9,7 @@ ${logTextInfo}
 <c:out value="${logText}"/>
 </pre>
 <p>
-Back to <a href="<c:url value="/"/>">home</a> page.
+Back to <a href="${domainRoot}/">home</a> page.
 </p>
 </body>
 </html>

@@ -70,7 +70,7 @@ public class PagesFilter implements Filter {
 		if (log.isDebugEnabled()) {
 			log.debug("Filtering for " + path);
 		}
-		if (path.startsWith("/static") || path.equals("/favicon.ico")) {
+		if (path.startsWith("/static") || path.startsWith("/favicon.ico")) {
 			// Allthough "/favicon.ico" should not occur, it happens when in browser Back is clicked.
 			chain.doFilter(request, response); // Goes to default servlet.
 		} else {
