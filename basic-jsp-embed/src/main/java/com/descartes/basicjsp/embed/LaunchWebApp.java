@@ -81,7 +81,7 @@ public class LaunchWebApp {
 		
 		instance = this;
 		setContextPath(contextPath);
-		setPortNumber(portNumber == 0 ? 8080 : 0);
+		setPortNumber(portNumber == 0 ? 8080 : portNumber);
 		configure();
         log.debug("Using web application directory " + getWebAppDir());
         
