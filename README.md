@@ -3,10 +3,11 @@ Basic JSP embedded
 
 An example of a stand-alone web application that uses Tomcat Embedded and JSP.
 Various tips and tricks as well as best practices are included in the example project.
+WebSocket dependencies are included but not yet used in the demo (i.e. untested).
 
 To get the example project running you will need Maven and:
-- copy all 5 directories to your local drive (tip: use the ZIP download button shown above)
-- open a command prompt in the "basic-jsp-embed-parent" directory
+- a local copy of the repository (tip: use the "Download ZIP" button shown on the right)
+- open a command prompt in the main directory containing the 5 project module directories.
 - run "mvn install"
 - go to the "basic-jsp-embed-demo" directory
 - go to the "target/test-classes" sub-directory

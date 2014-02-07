@@ -3,33 +3,44 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.descartes</groupId>
 	<artifactId>basic-jsp-embed-parent</artifactId>
-	<version>1.0.2</version>
+	<version>1.1.0</version>
 	<packaging>pom</packaging>
 
 	<name>Basic JSP embedded Parent</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<appboot.version>1.1.1</appboot.version>
-		<tomcat.version>7.0.47</tomcat.version>
-		<slf4j.version>1.7.5</slf4j.version>
-		<!-- LogBack 1.0.13 depends on Slf4j 1.7.5 -->
-		<logback.version>1.0.13</logback.version>
+		<appboot.version>1.1.2</appboot.version>
+		<tomcat.version>8.0.1</tomcat.version>
+		<slf4j.version>1.7.6</slf4j.version>
+		<!-- LogBack 1.1.1 depends on Slf4j 1.7.6 -->
+		<logback.version>1.1.1</logback.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Tomcat and JSP dependencies -->
+			<!-- Tomcat, JSP and WebSocket dependencies -->
 			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-jasper</artifactId>
 				<version>${tomcat.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>${tomcat.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.websocket</groupId>
+				<artifactId>javax.websocket-api</artifactId>
+				<version>1.0</version>
+				<scope>provided</scope>
+			</dependency>
 			<!-- Runtime dependencies for jsp -->
 			<dependency>
 				<groupId>org.eclipse.jdt.core.compiler</groupId>
 				<artifactId>ecj</artifactId>
-				<version>4.2.1</version>
+				<version>4.3.1</version>
 				<scope>runtime</scope>
 			</dependency>
 			<dependency>
@@ -45,17 +56,22 @@
 				<version>${tomcat.version}</version>
 				<scope>runtime</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
 			<!-- Only for Eclipse JSP validation -->
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
-				<version>3.0.1</version>
+				<version>3.1.0</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>javax.servlet.jsp</groupId>
-				<artifactId>jsp-api</artifactId>
-				<version>2.2.1-b03</version>
+				<artifactId>javax.servlet.jsp-api</artifactId>
+				<version>2.3.1</version>
 				<scope>provided</scope>
 			</dependency>
 			<!-- Stand-alone application dependencies -->
@@ -74,6 +90,11 @@
 				<artifactId>logback-classic</artifactId>
 				<version>${logback.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
 			<!-- For logback smtp-appender -->
 			<dependency>
 				<groupId>javax.mail</groupId>
@@ -81,16 +102,7 @@
 				<version>1.4.5</version>
 				<scope>runtime</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>log4j-over-slf4j</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
+			<!-- Test dependencies -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-simple</artifactId>
@@ -129,8 +141,8 @@
 					<configuration>
 						<debug>true</debug>
 						<optimize>true</optimize>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.7</source>
+						<target>1.7</target>
 						<showDeprecation>true</showDeprecation>
 						<showWarnings>true</showWarnings>
 					</configuration>
@@ -195,7 +207,7 @@
 						<ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
 						<attach>false</attach>
 						<descriptors>
-							<descriptor>assembler.xml</descriptor>
+							<descriptor>assembly.xml</descriptor>
 						</descriptors>
 					</configuration>
 				</plugin>

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.descartes</groupId>
 		<artifactId>basic-jsp-embed-parent</artifactId>
-		<version>1.0.2</version>
+		<version>1.1.0</version>
 		<relativePath>basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>basic-jsp-embed-project</artifactId>
@@ -30,11 +30,6 @@
 							<goal>single</goal>
 						</goals>
 						<phase>package</phase>
-						<configuration>
-							<descriptors>
-								<descriptor>assembler.xml</descriptor>
-							</descriptors>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

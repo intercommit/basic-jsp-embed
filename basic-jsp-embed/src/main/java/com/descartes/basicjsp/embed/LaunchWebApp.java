@@ -22,17 +22,13 @@ import java.awt.Desktop;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
-
-import javax.naming.directory.DirContext;
 
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.loader.WebappClassLoader;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.naming.resources.FileDirContext;
-import org.apache.naming.resources.VirtualDirContext;
+import org.apache.catalina.webresources.DirResourceSet;
+import org.apache.catalina.webresources.JarResourceSet;
+import org.apache.catalina.webresources.StandardRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +38,8 @@ import com.descartes.appboot.BootKeys;
 /**
  * Main class to start the web application.
  * Extend this class and set it as main class in your pom for the maven-jar-plugin.
- * Update the {@link #addResources(StandardContext, boolean, String)} method to add your resources.
+ * Override the {@link #configure()} and {@link #addResources(StandardRoot)} / {@link #addResourcesMavenTest(StandardRoot)}
+ * functions to customize your web-app (see also basic-jsp-embed-demo project). 
  * @author fwiers
  *
  */
@@ -67,6 +64,13 @@ public class LaunchWebApp {
 	protected TomcatStopper stopThread;
 	protected TomcatShutdownHook stopHook;
 	
+	private boolean mavenTest;
+	private boolean reloadable;
+	private boolean openBrowser;
+	private String webAppDir;
+	private String contextPath;
+	private int portNumber;
+	
 	/**
 	 * Configures and starts Tomcat, registers a shutdown-hook for Tomcat and starts a {@link TomcatStopper} thread. 
 	 * @param contextPath If none, use an empty string (NOT a <tt>/</tt>), else for example <tt>/mywebapp</tt>.
@@ -76,35 +80,34 @@ public class LaunchWebApp {
 	public void start(String contextPath, int portNumber) throws Exception {
 		
 		instance = this;
-		if (portNumber == 0) {
-			portNumber = 8080;
-		}
-    	URLClassLoader bootCL = (URLClassLoader)Thread.currentThread().getContextClassLoader();
-        WebappClassLoader webCL = new WebappClassLoader(bootCL);
-        webCL.setSearchExternalFirst(true);
-        webCL.start(); // prevents illegal-state exceptions
-        WebappLoader webLoader = new WebappLoader(webCL);
-        boolean inTest = System.getProperties().containsKey(BootKeys.APP_MAVEN_TEST);
-        String webAppDir = AppBoot.getHomeDir();
-        String classesDir = null;
-        if (inTest) {
-        	classesDir = new File(AppBoot.getHomeDir()).getParent() + File.separator + "classes";
-        	webAppDir = classesDir + File.separator + "META-INF" + File.separator + "resources";
-        }
-        log.debug("Using web application directory " + webAppDir);
+		setContextPath(contextPath);
+		setPortNumber(portNumber == 0 ? 8080 : 0);
+		configure();
+        log.debug("Using web application directory " + getWebAppDir());
         
         final Tomcat tomcat = new Tomcat();
-        tomcat.setPort(portNumber);
-        StandardContext webCtx = (StandardContext) tomcat.addWebapp(contextPath, webAppDir);
-        webCtx.setLoader(webLoader);
-        webCtx.setReloadable(inTest);
+        tomcat.setPort(getPortNumber());
         
-        addResources(webCtx, inTest, classesDir);
+        StandardContext webCtx = (StandardContext) tomcat.addWebapp(getContextPath(), getWebAppDir());
+        webCtx.setReloadable(isReloadable());
 
+        WebappLoader webLoader = new WebappLoader(AppBoot.bootClassLoader);
+        // reloadable is copied from context setting.
+        webCtx.setLoader(webLoader);
+        
+        StandardRoot webResources = new StandardRoot();
+        webCtx.setResources(webResources);
+        if (isMavenTest()) {
+        	addResourcesMavenTest(webResources);
+        } else {
+            addResources(webResources);
+        }
+        
         tomcat.start();
         
         // To stop Tomcat via web-page action.
         stopThread = new TomcatStopper(tomcat);
+        stopThread.setName("TomcatShutdown");
         stopThread.start();
         // To stop Tomcat when JVM receives terminate signal
         Runtime.getRuntime().addShutdownHook(stopHook = new TomcatShutdownHook(stopThread));
@@ -112,8 +115,8 @@ public class LaunchWebApp {
         if (tomcat.getServer().getPort() > -1) {
         	log.info("Embedded Tomcat listening on port " + tomcat.getServer().getPort() + " for shutdown command " + tomcat.getServer().getShutdown());
         }
-        if (Desktop.isDesktopSupported()) {
-        	String indexUrl = "http://localhost:" + portNumber + contextPath;
+        if (isOpenBrowser() && Desktop.isDesktopSupported()) {
+        	String indexUrl = "http://localhost:" + getPortNumber() + getContextPath();
         	try {
         		Desktop.getDesktop().browse(new URI(indexUrl));
         	} catch (Exception e) {
@@ -123,33 +126,78 @@ public class LaunchWebApp {
 	}
 	
 	/**
-	 * Overload or copy and adjust this method to load resources from other places/jars.
-	 * See the <tt>basic-jsp-embed-demo</tt> project for an example (in the demo-project this method is changed
-	 * to also load resources from this project's jar as last). 
-	 * @param webCtx the webContext to add the resources to. 
-	 * @param inTest true if application is started from the target/test-classes directory.
-	 * @param classesDir if inTest is true, this points to the target/classes directory
-	 * (containing the META-INF/resources directory with the web-application resources).
-	 * @throws Exception anything can go wrong ...
+	 * Called by start to set all get/set variables.
+	 * Overload to set the variables appropriate for your web-app.  
 	 */
-	public void addResources(StandardContext webCtx, boolean inTest, String classesDir) throws Exception {
+	public void configure() {
 		
-        DirContext resources = null;
-        if (inTest) {
-        	log.debug("Restarting web application when classes change.");
-        	//declare an alternate location for "WEB-INF/classes" dir    
-        	VirtualDirContext vres = new VirtualDirContext();
-        	resources = vres;
-        	vres.setExtraResourcePaths("/WEB-INF/classes=" + classesDir);
-        } else {
-        	FileDirContext fres = new FileDirContext();
-        	resources = fres;
-        	URL jarFile = LaunchWebApp.class.getProtectionDomain().getCodeSource().getLocation();
-        	log.debug("Loading resources from " + jarFile.toURI().toString());
-        	// URL must start with "jar:" so that "openConnection" returns a java.net.JarURLConnection
-        	fres.addResourcesJar(new URL("jar:" + jarFile.toURI().toString() + "!/"));
-        }
-        webCtx.setResources(resources);
+		setMavenTest(System.getProperties().containsKey(BootKeys.APP_MAVEN_TEST));
+		setReloadable(true);
+		if (isMavenTest()) {
+			setOpenBrowser(true);
+			setWebAppDir(getMavenClassesDir() + File.separator + "META-INF" + File.separator + "resources");
+		} else {
+			setWebAppDir(AppBoot.getHomeDir());
+		}
+	}
+	
+	/**
+	 * Called by start when {@link #isMavenTest()} returns true.
+	 * Adds the {@link #getMavenClassesDir()} as post-directory resource mapped to "/WEB-INF/classes". 
+	 * @param webResources
+	 */
+	public void addResourcesMavenTest(StandardRoot webResources) {
+		
+    	String classesDir = getMavenClassesDir();
+    	log.debug("Restarting web application when classes change in " + classesDir);
+    	// Note: only changes for classes loaded by Tomcat are seen by Tomcat.
+    	DirResourceSet dr = new DirResourceSet(webResources, "/WEB-INF/classes", classesDir, "/");
+    	webResources.addPostResources(dr);
+	}
+	
+	/**
+	 * Called by start when {@link #isMavenTest()} returns false.
+	 * <br>Calls {@link #addResourceJar(StandardRoot, Class)} with the {@link #getInstance()} class.
+	 * <br>If {@link #isReloadable()} is true, calls {@link #addResourceLibDir(StandardRoot, String)}
+	 * with {@link #getWebAppDir()}/lib.
+	 */
+	public void addResources(StandardRoot webResources) {
+
+		addResourceJar(webResources, getInstance().getClass());
+		if (isReloadable()) {
+			addResourceLibDir(webResources, getWebAppDir() + "lib");
+		}
+	}
+	
+	/**
+	 * Adds the jar containing the given class as a {@link JarResourceSet} (internal path is set to "/META-INF/resources").
+	 */
+	public void addResourceJar(StandardRoot webResources, Class<?> classInJar) {
+		
+		File jarFile = new File(classInJar.getProtectionDomain().getCodeSource().getLocation().getFile());
+		log.debug("Adding resource jar file " + jarFile);
+		JarResourceSet jr = new JarResourceSet(webResources, "/", jarFile.getAbsolutePath(), "/META-INF/resources");
+		webResources.addJarResources(jr);
+	}
+	
+	/**
+	 * Adds the libDir as a {@link DirResourceSet} (internal path is set to "/WEB-INF/lib").
+	 * This is only needed when web-app should reload when a jar changes
+	 * ({@link AppBoot} will already serve classes within the jars to Tomcat). 
+	 */
+	public void addResourceLibDir(StandardRoot webResources, String libDir) {
+		
+		log.debug("Adding resource lib directory " + libDir);
+		DirResourceSet dr = new DirResourceSet(webResources, "/WEB-INF/lib", libDir, "/");
+		webResources.addPostResources(dr);
+	}
+	
+	/**
+	 * Only use when {@link #isMavenTest()} returns true.
+	 * @return the Maven target/classes directory.
+	 */
+	public String getMavenClassesDir() {
+		return new File(AppBoot.getHomeDir()).getParent() + File.separator + "classes";
 	}
 	
 	/**
@@ -172,12 +220,20 @@ public class LaunchWebApp {
 	 */
 	public static boolean stopTomcatFromBoot() {
 		
+		if (getInstance() != null) {
+			log.debug("LaunchWebApp instance found.");
+			getInstance().stopTomcat();
+			return true;
+		}
 		boolean tomcatStopped = false;
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        while (cl != AppBoot.bootClassLoader && cl.getParent() != null) {
-        	cl = cl.getParent();
-        }
-        log.debug("Found boot class loader: " + cl);
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		if (cl.getParent() != null) {
+			log.debug("Using webapp parent classloader.");
+			cl = cl.getParent();
+		} else {
+			log.debug("Using system classloader.");
+			cl = ClassLoader.getSystemClassLoader();
+		}
         try {
         	Class<?> wac = cl.loadClass(LaunchWebApp.class.getName());
         	Method minstance = wac.getMethod("getInstance", (Class<?>[]) null);
@@ -190,6 +246,57 @@ public class LaunchWebApp {
         	log.error("Could not call shutdown from " + LaunchWebApp.class.getSimpleName() + " from boot class loader.", e);
         }
         return tomcatStopped;
+	}
+
+	/* *** bean methods *** */
+	
+	
+	public boolean isMavenTest() {
+		return mavenTest;
+	}
+
+	public void setMavenTest(boolean mavenTest) {
+		this.mavenTest = mavenTest;
+	}
+
+	public boolean isReloadable() {
+		return reloadable;
+	}
+
+	public void setReloadable(boolean reloadable) {
+		this.reloadable = reloadable;
+	}
+
+	public String getWebAppDir() {
+		return webAppDir;
+	}
+
+	public void setWebAppDir(String webAppDir) {
+		this.webAppDir = webAppDir;
+	}
+
+	public String getContextPath() {
+		return contextPath;
+	}
+
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
+	}
+
+	public int getPortNumber() {
+		return portNumber;
+	}
+
+	public void setPortNumber(int portNumber) {
+		this.portNumber = portNumber;
+	}
+
+	public boolean isOpenBrowser() {
+		return openBrowser;
+	}
+
+	public void setOpenBrowser(boolean openBrowser) {
+		this.openBrowser = openBrowser;
 	}
 	
 }

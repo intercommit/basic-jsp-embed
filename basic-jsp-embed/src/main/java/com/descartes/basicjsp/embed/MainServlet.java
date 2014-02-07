@@ -72,7 +72,7 @@ public class MainServlet extends HttpServlet {
 	}
 	
 	/**
-	 * Overlaod to set web-app home. 
+	 * Overload to set web-app home. 
 	 * @return {@link Home#getInstance()}.
 	 */
 	protected Controller getHomeController() {
@@ -80,7 +80,7 @@ public class MainServlet extends HttpServlet {
 	}
 
 	/**
-	 * Overlaod to set a secure shutdown page. 
+	 * Overload to set a secure shutdown page. 
 	 * @return {@link Shutdown#getInstance()}.
 	 */
 	protected Controller getShutdownController() {

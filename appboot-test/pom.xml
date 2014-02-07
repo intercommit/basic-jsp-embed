@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>com.descartes</groupId>
 		<artifactId>basic-jsp-embed-parent</artifactId>
-		<version>1.0.2</version>
+		<version>1.1.0</version>
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>appboot-test</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.2</version>
 	<name>Application Booter Test Jar</name>
 
 	<properties>
