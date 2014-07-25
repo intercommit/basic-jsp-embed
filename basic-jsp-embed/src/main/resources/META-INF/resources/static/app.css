@@ -29,7 +29,7 @@ table, th, td {
 	/* behavior:url(/border-radius.htc); */
 }
 
-code {
+code, tt {
 	font-size: 1.2em;
 }
 

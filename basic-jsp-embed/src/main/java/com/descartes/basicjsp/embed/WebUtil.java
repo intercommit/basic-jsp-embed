@@ -1,21 +1,3 @@
-/*  Copyright 2013 Descartes Systems Group
-*
-*  This file is part of the "BasicJspEmbed" project hosted on https://github.com/intercommit/basic-jsp-embed
-*
-*  BasicJspEmbed is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU Lesser General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  any later version.
-*
-*  BasicJspEmbed is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with BasicJspEmbed.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
 package com.descartes.basicjsp.embed;
 
 import java.io.BufferedReader;
@@ -28,11 +10,14 @@ import java.io.PrintWriter;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.tomcat.util.http.HttpMessages;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +25,12 @@ import org.slf4j.LoggerFactory;
 public class WebUtil {
 
 	protected static Logger log = LoggerFactory.getLogger(WebUtil.class);
+	
+	/**
+	 * Used to get the "reason phrase" for a status code.
+	 * These phrases are stored in <code>tomcat-embed-core.jar:org.apache.tomcat.util.http.res.LocalStrings.properties</code>
+	 */
+	public static HttpMessages httpMessages = HttpMessages.getInstance(Locale.getDefault());
 
 	/**
 	 * Constructs the home-page URL as seen by the client.
@@ -64,21 +55,32 @@ public class WebUtil {
 
 	/**
 	 * Removes the context-path and "/pages" prefix from the request-URL so that only the requested page is returned.
-	 * E.g. <tt>http://localhost/mywebapp/pages/index --&gt; index</tt>
-	 * <br>This method can be used together with the {@link PagesFilter}.
+	 * E.g. <tt>http://localhost/mywebapp/pages/index --&gt; /index</tt>
+	 * <br>This method should be used together with the {@link PagesFilter}.
 	 * @param request
 	 */
 	public static String getPagePath(HttpServletRequest request) {
-		return request.getRequestURI().substring(request.getContextPath().length()).substring("/pages".length());
+		return request.getRequestURI()
+				.substring(request.getContextPath().length())
+				.substring(PagesFilter.PAGES_PATH.length());
 	}
 	
 	/**
 	 * Description of remote location between []. If used in log-statements, 
 	 * it is best to cache this value in a local String. 
-	 * @return [RemoteIP:port] from request.
+	 * @return [&lt;username@&gt;RemoteIP:port] from request.
 	 */
 	public static String getRemoteLocation(final HttpServletRequest request) {
-		return "[" + request.getRemoteAddr() + ":" + request.getRemotePort() + "]";
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append('[');
+		if (request.getUserPrincipal() != null 
+				&& request.getUserPrincipal().getName() != null) {
+			sb.append(request.getUserPrincipal().getName()).append('@');
+		}
+		sb.append(request.getRemoteAddr()).append(':').append(request.getRemotePort());
+		sb.append(']');
+		return sb.toString();
 	}
 
 	/** Returns a String as bytes using the default encoding. */
@@ -94,17 +96,17 @@ public class WebUtil {
 		return (v == null || v.isEmpty() ? null : v);
 	}
 
-	/** Sends a "404 Not Found: " response in plain text with the message appended. */
+	/** Sends a "404 Not Found" response in plain text with the message (message can be null). */
 	public static void respondNotFound(HttpServletResponse response, String msg, String rloc) {
-		respondMsg(response, HttpServletResponse.SC_NOT_FOUND, "404 Not Found: " + msg, rloc);
+		respondMsg(response, HttpServletResponse.SC_NOT_FOUND, msg, rloc);
 	}
 
-	/** Sends a "500 Internal Server Error: " response in plain text with the message appended. */
+	/** Sends a "500 Internal Server Error" response in plain text with the message (message can be null). */
 	public static void respondInternalError(HttpServletResponse response, String msg, String rloc) {
-		respondMsg(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "500 Internal Server Error: " + msg, rloc);
+		respondMsg(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, rloc);
 	}
 
-	/** Sends a 200 "OK" response in plain text. */
+	/** Sends a "200 OK" response in plain text with the message set to "OK". */
 	public static void respondOK(HttpServletResponse response, String rloc) {
 		respondMsg(response, HttpServletResponse.SC_OK, "OK", rloc);
 	}
@@ -113,12 +115,16 @@ public class WebUtil {
 	 * The default response method is wrapped by Tomcat into a html-page.
 	 * This method sends the response in plain text.
 	 * @param statusCode One of {@link HttpServletResponse} static "SC" codes. 
-	 * @param statusMsg may not be null or empty.
+	 * @param statusMsg if null or empty, the "status code reason phrase" is used.
 	 */
 	public static void respondMsg(HttpServletResponse response, int statusCode, String statusMsg, String rloc) {
 		
 		response.setStatus(statusCode);
 		response.setHeader("Content-Type", "text/plain");
+		if (isEmpty(statusMsg)) {
+			statusMsg = httpMessages.getMessage(statusCode);
+			statusMsg = statusCode + (isEmpty(statusMsg) ? "" : " " + statusMsg);
+		}
 		try {
 			byte[] msg = getBytes(statusMsg);
 			response.setHeader("Content-Length", Integer.toString(msg.length));
@@ -322,5 +328,7 @@ public class WebUtil {
 			}
 		}
 	}
+	
+	public static boolean isEmpty(String s) { return (s == null || s.length() == 0); }
 
 }

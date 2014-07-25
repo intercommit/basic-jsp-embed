@@ -1,19 +1,19 @@
-/*  Copyright 2013 Descartes Systems Group
+/*  Copyright 2012 InterCommIT b.v.
 *
-*  This file is part of the "BasicJspEmbed" project hosted on https://github.com/intercommit/basic-jsp-embed
+*  This file is part of the "BasicJspWs" project hosted on https://github.com/intercommit/basicjspws
 *
-*  BasicJspEmbed is free software: you can redistribute it and/or modify
+*  BasicJspWs is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU Lesser General Public License as published by
 *  the Free Software Foundation, either version 3 of the License, or
 *  any later version.
 *
-*  BasicJspEmbed is distributed in the hope that it will be useful,
+*  BasicJspWs is distributed in the hope that it will be useful,
 *  but WITHOUT ANY WARRANTY; without even the implied warranty of
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 *  GNU Lesser General Public License for more details.
 *
 *  You should have received a copy of the GNU Lesser General Public License
-*  along with BasicJspEmbed.  If not, see <http://www.gnu.org/licenses/>.
+*  along with BasicJspWs. If not, see <http://www.gnu.org/licenses/>.
 *
 */
 package com.descartes.basicjsp.embed;

@@ -1,21 +1,3 @@
-/*  Copyright 2013 Descartes Systems Group
-*
-*  This file is part of the "BasicJspEmbed" project hosted on https://github.com/intercommit/basic-jsp-embed
-*
-*  BasicJspEmbed is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU Lesser General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  any later version.
-*
-*  BasicJspEmbed is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with BasicJspEmbed.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
 package com.descartes.basicjsp.embed;
 
 import java.awt.Desktop;
@@ -38,7 +20,7 @@ import com.descartes.appboot.BootKeys;
 /**
  * Main class to start the web application.
  * Extend this class and set it as main class in your pom for the maven-jar-plugin.
- * Override the {@link #configure()} and {@link #addResources(StandardRoot)} / {@link #addResourcesMavenTest(StandardRoot)}
+ * Override the {@link #configure()}, {@link #addResources(StandardRoot)} and {@link #beforeStart()}
  * functions to customize your web-app (see also basic-jsp-embed-demo project). 
  * @author fwiers
  *
@@ -71,6 +53,10 @@ public class LaunchWebApp {
 	private String contextPath;
 	private int portNumber;
 	
+	protected Tomcat tomcat;
+	protected StandardContext webCtx;
+	protected WebappLoader webLoader;
+	
 	/**
 	 * Configures and starts Tomcat, registers a shutdown-hook for Tomcat and starts a {@link TomcatStopper} thread. 
 	 * @param contextPath If none, use an empty string (NOT a <tt>/</tt>), else for example <tt>/mywebapp</tt>.
@@ -85,23 +71,23 @@ public class LaunchWebApp {
 		configure();
         log.debug("Using web application directory " + getWebAppDir());
         
-        final Tomcat tomcat = new Tomcat();
+        tomcat = new Tomcat();
         tomcat.setPort(getPortNumber());
         
-        StandardContext webCtx = (StandardContext) tomcat.addWebapp(getContextPath(), getWebAppDir());
+        webCtx = (StandardContext) tomcat.addWebapp(getContextPath(), getWebAppDir());
         webCtx.setReloadable(isReloadable());
 
-        WebappLoader webLoader = new WebappLoader(AppBoot.bootClassLoader);
+        webLoader = new WebappLoader(AppBoot.bootClassLoader);
         // reloadable is copied from context setting.
         webCtx.setLoader(webLoader);
         
+        log.info("Reloading loader: " + webLoader.getReloadable());
+        
         StandardRoot webResources = new StandardRoot();
         webCtx.setResources(webResources);
-        if (isMavenTest()) {
-        	addResourcesMavenTest(webResources);
-        } else {
-            addResources(webResources);
-        }
+        addResources(webResources);
+        
+        beforeStart();
         
         tomcat.start();
         
@@ -141,31 +127,16 @@ public class LaunchWebApp {
 		}
 	}
 	
-	/**
-	 * Called by start when {@link #isMavenTest()} returns true.
-	 * Adds the {@link #getMavenClassesDir()} as post-directory resource mapped to "/WEB-INF/classes". 
-	 * @param webResources
-	 */
-	public void addResourcesMavenTest(StandardRoot webResources) {
-		
-    	String classesDir = getMavenClassesDir();
-    	log.debug("Restarting web application when classes change in " + classesDir);
-    	// Note: only changes for classes loaded by Tomcat are seen by Tomcat.
-    	DirResourceSet dr = new DirResourceSet(webResources, "/WEB-INF/classes", classesDir, "/");
-    	webResources.addPostResources(dr);
-	}
-	
-	/**
-	 * Called by start when {@link #isMavenTest()} returns false.
-	 * <br>Calls {@link #addResourceJar(StandardRoot, Class)} with the {@link #getInstance()} class.
-	 * <br>If {@link #isReloadable()} is true, calls {@link #addResourceLibDir(StandardRoot, String)}
-	 * with {@link #getWebAppDir()}/lib.
-	 */
 	public void addResources(StandardRoot webResources) {
-
-		addResourceJar(webResources, getInstance().getClass());
-		if (isReloadable()) {
-			addResourceLibDir(webResources, getWebAppDir() + "lib");
+		
+		if (isMavenTest()) {
+	    	String classesDir = getMavenClassesDir();
+	    	log.debug("Restarting web application when classes change in " + classesDir);
+	    	// Note: only changes for classes loaded by Tomcat are seen by Tomcat.
+	    	DirResourceSet dr = new DirResourceSet(webResources, "/WEB-INF/classes", classesDir, "/");
+	    	webResources.addPostResources(dr);
+		} else {
+			addResourceJar(webResources, getInstance().getClass());
 		}
 	}
 	
@@ -184,12 +155,21 @@ public class LaunchWebApp {
 	 * Adds the libDir as a {@link DirResourceSet} (internal path is set to "/WEB-INF/lib").
 	 * This is only needed when web-app should reload when a jar changes
 	 * ({@link AppBoot} will already serve classes within the jars to Tomcat). 
+	 * <br>WARNING: can have strange side-effects and reloading appears to be broken (webapp is stopped but not started).
 	 */
 	public void addResourceLibDir(StandardRoot webResources, String libDir) {
 		
 		log.debug("Adding resource lib directory " + libDir);
 		DirResourceSet dr = new DirResourceSet(webResources, "/WEB-INF/lib", libDir, "/");
 		webResources.addPostResources(dr);
+	}
+	
+	/**
+	 * Called before Tomcat is started, use to setup security etc.
+	 * Does nothing by default.
+	 */
+	public void beforeStart() {
+		
 	}
 	
 	/**

@@ -1,21 +1,3 @@
-/*  Copyright 2013 Descartes Systems Group
-*
-*  This file is part of the "BasicJspEmbed" project hosted on https://github.com/intercommit/basic-jsp-embed
-*
-*  BasicJspEmbed is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU Lesser General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  any later version.
-*
-*  BasicJspEmbed is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with BasicJspEmbed.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
 package com.descartes.basicjsp.embed;
 
 import java.io.IOException;
@@ -56,6 +38,9 @@ import org.slf4j.LoggerFactory;
  */
 public class PagesFilter implements Filter {
 
+	public static String PAGES_PATH = "/pages";
+	public static String STATIC_PATH = "/static";
+	
 	protected Logger log = LoggerFactory.getLogger(getClass());
 
 	@Override
@@ -70,11 +55,11 @@ public class PagesFilter implements Filter {
 		if (log.isDebugEnabled()) {
 			log.debug("Filtering for " + path);
 		}
-		if (path.startsWith("/static") || path.startsWith("/favicon.ico")) {
+		if (path.startsWith(STATIC_PATH) || path.startsWith("/favicon.ico")) {
 			// Allthough "/favicon.ico" should not occur, it happens when in browser Back is clicked.
 			chain.doFilter(request, response); // Goes to default servlet.
 		} else {
-		    request.getRequestDispatcher("/pages" + path).forward(request, response);
+		    request.getRequestDispatcher(PAGES_PATH + path).forward(request, response);
 		    // Goes to main (jsp) pages servlet.
 		}		
 	}

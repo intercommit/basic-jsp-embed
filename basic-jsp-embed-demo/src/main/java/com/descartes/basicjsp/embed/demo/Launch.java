@@ -42,13 +42,6 @@ public class Launch extends LaunchWebApp {
 	}
 	
 	@Override
-	public void addResourcesMavenTest(StandardRoot webResources) {
-
-		super.addResourcesMavenTest(webResources);
-		addBasicJspResource(webResources);
-	}
-	
-	@Override
 	public void addResources(StandardRoot webResources) {
 		
 		super.addResources(webResources);
