@@ -116,7 +116,11 @@ public class MainServlet extends HttpServlet {
 		try {
 			viewName = controller.handleRequest(request, response);
 		} catch (Exception e) {
-			log.error("Controller " + controller.getClass().getName() + " failed to handle request.", e);
+			StringBuilder sb = new StringBuilder();
+			sb.append("Controller ").append(controller.getClass().getName()).append(" failed to handle request.\n");
+			sb.append(WebUtil.getRequestDetails(request));
+			sb.append("\nError thrown by controller:");
+			log.error(sb.toString(), e);
 			WebUtil.respondInternalError(response, "Controller " + controller.getClass().getSimpleName() + " failed to handle request: " + e, null);
 			return;
 		}

@@ -5,9 +5,11 @@
 JMX server info.
 </p>
 <pre>
-<div id="jmxinfo"></div>
+<c:out value="${jmxInfoText}"/>
 </pre>
 
+<!--  No longer used -->
+<!-- 
 <script>
 var jolokiaAgentUrl = "${domainRoot}/jmxagent"; 
 </script>
@@ -16,7 +18,7 @@ var jolokiaAgentUrl = "${domainRoot}/jmxagent";
 <script src="${domainRoot}/static/jolokia.js"></script>
 <script src="${domainRoot}/static/jolokia-simple.js"></script>
 <script src="${domainRoot}/static/jmx-info.js"></script>
-
+ -->
 </body>
 </html>
 

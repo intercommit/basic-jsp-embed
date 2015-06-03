@@ -1,6 +1,7 @@
 <!-- If this file changes, logging is re-configured within 5 seconds and/or after 16 log-statements. -->
 <configuration scan="true" scanPeriod="5 seconds">
 
+	<!-- using appboot system properties to configure log file location -->
 	<property name="log.home" value="${app.home.dir}logs" />
 	<property name="log.name" value="${log.home}/${app.name}" />
 

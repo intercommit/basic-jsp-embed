@@ -4,20 +4,23 @@
 	<parent>
 		<groupId>com.descartes</groupId>
 		<artifactId>basic-jsp-embed-parent</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
+		<version>1.2.1.GH</version>
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>basic-jsp-embed</artifactId>
+	<version>1.2.1.GH</version>
 	<name>Embedded Basic JSP web application</name>
 
 	<properties>
 		<manifest.main>com.descartes.basicjsp.embed.LaunchWebApp</manifest.main>
+		<tomcat.version>8.0.23</tomcat.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.descartes</groupId>
 			<artifactId>appboot</artifactId>
+			<version>${appboot.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
@@ -29,47 +32,62 @@
 			<artifactId>tomcat-embed-websocket</artifactId>
 			<version>${tomcat.version}</version>
 		</dependency>
-
-		<!-- Runtime dependencies for jsp -->
 		<dependency>
-			<groupId>org.eclipse.jdt.core.compiler</groupId>
-			<artifactId>ecj</artifactId>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-logging-log4j</artifactId>
+			<version>${tomcat.version}</version>
 		</dependency>
+
+		<!-- jsp tag handling -->
 		<dependency>
 			<groupId>org.apache.taglibs</groupId>
 			<artifactId>taglibs-standard-spec</artifactId>
+			<version>1.2.5</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.taglibs</groupId>
 			<artifactId>taglibs-standard-impl</artifactId>
+			<version>1.2.5</version>
+			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Logging -->
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-logging-log4j</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- For Eclipse validation -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
 			<artifactId>javax.servlet.jsp-api</artifactId>
+			<version>2.3.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.websocket</groupId>
 			<artifactId>javax.websocket-api</artifactId>
+			<version>1.1</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -85,9 +103,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <overWriteSnapshots>true</overWriteSnapshots>
+							<includeScope>runtime</includeScope>
                             <excludeArtifactIds>appboot</excludeArtifactIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -97,10 +114,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <overWriteSnapshots>true</overWriteSnapshots>
                             <stripVersion>true</stripVersion>
                             <includeArtifactIds>appboot</includeArtifactIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -108,7 +123,7 @@
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                    <outputDirectory>${project.build.directory}/dependency</outputDirectory>
 					<archive>
 						<manifest>
 							<mainClass>${manifest.main}</mainClass>
@@ -121,6 +136,22 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<phase>package</phase>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

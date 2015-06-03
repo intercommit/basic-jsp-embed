@@ -4,6 +4,9 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.catalina.startup.Tomcat;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
 
 /**
  * A non-daemon thread that waits for a call to {@link #stopTomcatAsync()} after it is started.
@@ -74,7 +77,15 @@ public class TomcatStopper extends Thread {
 			log.error("Stopping embedded Tomcat instance failed.", e);
 		} finally {
 			stopDone.release();
+			stopLoggerContext();
 		}
+	}
+	
+	protected void stopLoggerContext() {
+
+		// assume SLF4J is bound to logback-classic in the current environment
+		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+		loggerContext.stop();
 	}
 
 }

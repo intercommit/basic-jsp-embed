@@ -137,14 +137,15 @@ public class WebUtil {
 	}
 	
 	/**
-	 * Logs in debug-mode the headers, parameters and query-string of the request. 
-	 * @param log Logger to use.
-	 * @param request The request to log details about.
+	 * Returns a description of the request including remote location, headers, parameters and query string. 
 	 */
-	public static void logRequestDetails(final Logger log, final HttpServletRequest request) {
+	public static String getRequestDetails(final HttpServletRequest request) {
 		
-		if (!log.isDebugEnabled()) return;
 		StringBuilder sb = new StringBuilder(128);
+		if (request == null) {
+			sb.append("Request is null/unavailable.");
+			return sb.toString();
+		}
 		sb.append(getRemoteLocation(request)).append(" ");
 		sb.append(request.getMethod()).append(" request details:");
 		Enumeration<String> headerNames = request.getHeaderNames();
@@ -155,6 +156,9 @@ public class WebUtil {
 				String hname = headerNames.nextElement();
 				String hvalue = request.getHeader(hname);
 				if (hvalue != null) {
+					if ("authorization".equalsIgnoreCase(hname)) {
+						hvalue = starPwdAuthorizationHeader(hvalue);
+					}
 					sb.append("\nHeader ").append(hname).append(": ").append(hvalue);
 				}
 			}
@@ -175,7 +179,44 @@ public class WebUtil {
 			try { q = URLDecoder.decode(request.getQueryString(), "UTF-8"); } catch (Exception ignored) {}
 			sb.append("\nQuery string:\n").append(q);
 		}
-		log.debug(sb.toString());
+		return sb.toString();
+	}
+	
+	/**
+	 * Replaces the username/password value in a basic authorization header with stars.
+	 * E.g.:
+	 * <br><code>Basic YWRtaW46YWRtaW4xMjM=</code> becomes 
+	 * <br><code>Basic ********************</code>
+	 * @param hvalue authorization header value.
+	 * @return header value without username/password.
+	 */
+	public static String starPwdAuthorizationHeader(String hvalue) {
+		
+		int pwdStart = hvalue.indexOf(' ');
+		if (pwdStart < 0) {
+			pwdStart = 0;
+		} else if (pwdStart > hvalue.length() - 2) {
+			pwdStart = 0;
+		} else {
+			pwdStart++; // include the space in return-value.
+		}
+		String s = hvalue.substring(0, pwdStart);
+		for (int i = pwdStart; i < hvalue.length(); i++) {
+			s += '*';
+		}
+		return s;
+	}
+	
+	/**
+	 * Logs in debug-mode the headers, parameters and query-string of the request. 
+	 * @param log Logger to use.
+	 * @param request The request to log details about.
+	 */
+	public static void logRequestDetails(final Logger log, final HttpServletRequest request) {
+		
+		if (log.isDebugEnabled()) {
+			log.debug(getRequestDetails(request));
+		}
 	}
 	
 	/**

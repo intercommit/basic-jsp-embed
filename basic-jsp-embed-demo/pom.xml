@@ -4,52 +4,71 @@
 	<parent>
 		<groupId>com.descartes</groupId>
 		<artifactId>basic-jsp-embed-parent</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
+		<version>1.2.1.GH</version>
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>basic-jsp-embed-demo</artifactId>
-	<version>1.2.1-SNAPSHOT</version>
+	<version>1.2.1.GH</version>
 	<name>Demo for Embedded Basic JSP web application</name>
 
 	<properties>
 		<manifest.main>com.descartes.basicjsp.embed.demo.Launch</manifest.main>
+		<jolokia.version>1.2.3</jolokia.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.descartes</groupId>
 			<artifactId>basic-jsp-embed</artifactId>
-			<version>1.2.0-SNAPSHOT</version>
+			<version>1.2.1.GH</version>
 		</dependency>
 		<dependency>
           <groupId>org.jolokia</groupId>
           <artifactId>jolokia-core</artifactId>
-          <version>1.1.5</version>
+          <version>${jolokia.version}</version>
         </dependency>
+        <!-- Not used, just to show how to add them -->
+		<dependency>
+			<groupId>org.jolokia</groupId>
+			<artifactId>jolokia-client-javascript</artifactId>
+			<version>${jolokia.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Commons dependencies used by Demo project -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.2.1</version>
+			<version>3.4</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.9</version>
+			<version>1.10</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 		</dependency>
+		
 		<!-- For Eclipse validation -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
 			<artifactId>javax.servlet.jsp-api</artifactId>
+			<version>2.3.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.websocket</groupId>
+			<artifactId>javax.websocket-api</artifactId>
+			<version>1.1</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -58,6 +77,24 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+					<execution>
+						<id>unpack</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.jolokia</groupId>
+									<artifactId>jolokia-client-javascript</artifactId>
+									<version>${jolokia.version}</version>
+									<type>jar</type>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.directory}/classes/META-INF/resources/static</outputDirectory>
+						</configuration>
+					</execution>
                     <execution>
                         <id>copy-dependencies</id>
                         <phase>process-resources</phase>
@@ -65,9 +102,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <overWriteSnapshots>true</overWriteSnapshots>
+							<includeScope>runtime</includeScope>
                             <excludeArtifactIds>appboot</excludeArtifactIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -77,10 +113,8 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <overWriteSnapshots>true</overWriteSnapshots>
                             <stripVersion>true</stripVersion>
                             <includeArtifactIds>appboot</includeArtifactIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -88,7 +122,7 @@
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                    <outputDirectory>${project.build.directory}/dependency</outputDirectory>
 					<archive>
 						<manifest>
 							<mainClass>${manifest.main}</mainClass>
@@ -100,6 +134,9 @@
 				<artifactId>maven-source-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
@@ -107,11 +144,13 @@
 							<goal>single</goal>
 						</goals>
 						<phase>package</phase>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

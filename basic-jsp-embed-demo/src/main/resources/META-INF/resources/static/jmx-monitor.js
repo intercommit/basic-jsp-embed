@@ -44,7 +44,7 @@ $(document).ready(function() {
 	                },
 	                {
 	                	chartLegend : 'busy threads',
-	                	name: 'Tomcat:name="http-bio-8080",type=ThreadPool',
+	                	name: 'Tomcat:name="http-nio-8080",type=ThreadPool',
 	                	attribute: 'currentThreadsBusy'
 	                }
 	                ]);

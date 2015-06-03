@@ -1,7 +1,7 @@
 <assembly
-	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
 	<id>bin</id>
 	<formats>
 		<format>dir</format>
@@ -10,15 +10,14 @@
 	<fileSets>
 		<fileSet>
 			<directory>conf</directory>
-			<outputDirectory>/conf</outputDirectory>
 		</fileSet>
 		<fileSet>
 			<directory>scripts</directory>
-			<outputDirectory>/</outputDirectory>
+			<outputDirectory>.</outputDirectory>
 		</fileSet>
         <fileSet>
-            <directory>${project.build.directory}/lib</directory>
-            <outputDirectory>/lib</outputDirectory>
+            <directory>${project.build.directory}/dependency</directory>
+            <outputDirectory>lib</outputDirectory>
         </fileSet>
 	</fileSets>
 </assembly>

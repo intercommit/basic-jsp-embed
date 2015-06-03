@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URL;
 
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.loader.WebappLoader;
@@ -102,7 +103,7 @@ public class LaunchWebApp {
         	log.info("Embedded Tomcat listening on port " + tomcat.getServer().getPort() + " for shutdown command " + tomcat.getServer().getShutdown());
         }
         if (isOpenBrowser() && Desktop.isDesktopSupported()) {
-        	String indexUrl = "http://localhost:" + getPortNumber() + getContextPath();
+        	String indexUrl = tomcat.getConnector().getScheme() + "://localhost:" + getPortNumber() + getContextPath();
         	try {
         		Desktop.getDesktop().browse(new URI(indexUrl));
         	} catch (Exception e) {
@@ -125,6 +126,20 @@ public class LaunchWebApp {
 		} else {
 			setWebAppDir(AppBoot.getHomeDir());
 		}
+		setTldJars("*taglibs-standard-impl*", "*");
+	}
+	
+	/**
+	 * Sets the jar-file-names (glob-pattern, comma-separated) to scan for {@code *.tld} files,
+	 * see also https://tomcat.apache.org/tomcat-8.0-doc/config/jar-scan-filter.html
+	 * <br>By default all jar-files are scanned which has a significant impact on boot-time.
+	 * @param include set to {@code *taglibs-standard-impl*} by {@link #configure()}
+	 * @param exclude set to {@code *} by {@link #configure()}
+	 */
+	public void setTldJars(String include, String exclude) {
+		
+		System.setProperty(org.apache.tomcat.util.scan.Constants.SCAN_JARS_PROPERTY, include);
+		System.setProperty(org.apache.tomcat.util.scan.Constants.SKIP_JARS_PROPERTY, exclude);
 	}
 	
 	public void addResources(StandardRoot webResources) {
@@ -230,7 +245,6 @@ public class LaunchWebApp {
 
 	/* *** bean methods *** */
 	
-	
 	public boolean isMavenTest() {
 		return mavenTest;
 	}
@@ -279,4 +293,28 @@ public class LaunchWebApp {
 		this.openBrowser = openBrowser;
 	}
 	
+	/** 
+	 * Uses the thread's class-loader to get the path to a file on the class-path.
+	 * @return null if resourceName was not found or a file (which may or may not exist).
+	 */
+	public static File getFile(final String resourceName) {
+		return getFile(Thread.currentThread().getContextClassLoader().getResource(resourceName));
+	}
+
+	/** 
+	 * Converts a URL to a File (e.g. %20 int the path is converted to a space).
+	 * @return A file (which may or may not exist) or null if url was null.
+	 */
+	public static File getFile(final URL url) {
+	
+		if (url == null) return null;
+		File f = null;
+		try {
+			f = new File(url.toURI());
+		} catch(Exception e) {
+			f = new File(url.getPath());
+		}
+		return f;
+	}
+
 }

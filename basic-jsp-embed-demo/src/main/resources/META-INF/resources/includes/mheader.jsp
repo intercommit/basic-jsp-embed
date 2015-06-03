@@ -9,6 +9,9 @@
 <link rel="shortcut icon" href="${domainRoot}/favicon.ico"/>
 <link rel="stylesheet" type="text/css" href="${domainRoot}/static/app.css">
 <link rel="stylesheet" type="text/css" href="${domainRoot}/static/chartportlet.css">
+<link rel="stylesheet" type="text/css" href="${domainRoot}/static/jquery-ui-1.11.2/jquery-ui.min.css">
+<!-- 
 <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/themes/start/jquery-ui.css"/>
+ -->
 <title>${pageTitle} [${appName}]</title>
 </head>

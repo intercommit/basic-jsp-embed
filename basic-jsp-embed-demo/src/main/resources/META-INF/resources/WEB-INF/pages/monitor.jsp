@@ -19,8 +19,13 @@ var jolokiaAgentUrl = "${domainRoot}/jmxagent";
 
 <div class="column"></div>
 
+<!-- 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
+ -->
+ 
+<script src="${domainRoot}/static/jquery-ui-1.11.2/external/jquery/jquery.js"></script>
+<script src="${domainRoot}/static/jquery-ui-1.11.2/jquery-ui.min.js"></script>
 <script src="${domainRoot}/static/jolokia.js"></script>
 <script src="${domainRoot}/static/jolokia-simple.js"></script>
 <script src="${domainRoot}/static/highcharts.src.js"></script>

@@ -1,41 +1,35 @@
-/*  Copyright 2013 Descartes Systems Group
-*
-*  This file is part of the "BasicJspEmbedDemo" project hosted on https://github.com/intercommit/basic-jsp-embed
-*
-*  BasicJspEmbed is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU Lesser General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  any later version.
-*
-*  BasicJspEmbedDemo is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with BasicJspEmbedDemo.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
 package com.descartes.basicjsp.embed.demo.controller;
 
+import java.lang.management.ManagementFactory;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.descartes.basicjsp.embed.Controller;
 
 public class JmxInfo implements Controller {
 
-    private static class SingletonHolder { 
-    	public static final JmxInfo INSTANCE = new JmxInfo();
-    }
-    public static JmxInfo getInstance() {
-    	return SingletonHolder.INSTANCE;
-    }
+	private static final Logger log = LoggerFactory.getLogger(DirFiles.class);
 
 	@Override
 	public String handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		request.setAttribute(PAGE_TITLE, "JmxInfo");
+		String jmxInfo = null;
+		try {
+	        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+	        jmxInfo = (String) server.invoke(new ObjectName("jolokia:type=ServerHandler,qualifier=jspdemo"), "mBeanServersInfo", null, null);
+			if (jmxInfo != null) {
+				request.setAttribute("jmxInfoText", jmxInfo);
+			}
+		} catch (Exception e) {
+			log.error("Could not get JmxInfo", e);
+		}
 		return "/WEB-INF/pages/jmxinfo.jsp";
 	}
 
