@@ -43,7 +43,7 @@ public class AppBootTest {
 	public static void main(String[] args) {
 		
 		log.info("AppBoot Test Jar " + BootUtil.getPomVersion(AppBootTest.class) + " - main method in " + AppBootTest.class);
-		log.info("The log-statements should show a time-stamp as configured in simplelogger.properties");
+		log.info("The log-statements should show a time-stamp as configured in logback-test.xml or logback.xml.");
 		StringBuilder sb = new StringBuilder("Main Arguments: ");
 		if (BootUtil.isEmpty(args)) {
 			sb.append("none");

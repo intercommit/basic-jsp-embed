@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>com.descartes</groupId>
 		<artifactId>basic-jsp-embed-parent</artifactId>
-		<version>1.1.0</version>
+		<version>1.2.1.GH</version>
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>appboot-test</artifactId>
-	<version>1.1.2</version>
+	<version>1.1.2.GH</version>
 	<name>Application Booter Test Jar</name>
 
 	<properties>
@@ -19,22 +19,47 @@
 		<dependency>
 			<groupId>com.descartes</groupId>
 			<artifactId>appboot</artifactId>
+			<version>${appboot.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<scope>runtime</scope>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
+				<!-- Copy dependencies for use with target/test-classes/runtest -->
 				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+                        <configuration>
+							<includeScope>runtime</includeScope>
+                            <excludeArtifactIds>appboot</excludeArtifactIds>
+                        </configuration>
+					</execution>
+					<execution>
+						<id>copy-dependency-appboot</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+                        <configuration>
+                            <stripVersion>true</stripVersion>
+                            <includeArtifactIds>appboot</includeArtifactIds>
+                        </configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -45,6 +70,22 @@
 						</manifest>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<descriptors>
+								<descriptor>assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
