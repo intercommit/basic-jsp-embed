@@ -1,6 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+# Prevent detecting JavaScript by Github
+*.js linguist-language=Java
+
 # Custom for Visual Studio
 *.cs     diff=csharp
 *.sln    merge=union
