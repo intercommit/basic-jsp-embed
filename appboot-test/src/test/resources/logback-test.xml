@@ -1,8 +1,4 @@
-<configuration scan="true" scanPeriod="5 seconds">
-
-	<property name="app.name" value="appboot-test" />
-	<property name="log.home" value="./target/logs" />
-	<property name="log.name" value="${log.home}/${app.name}" />
+<configuration>
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>

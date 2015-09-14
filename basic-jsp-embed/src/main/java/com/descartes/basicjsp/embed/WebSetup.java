@@ -44,7 +44,9 @@ public class WebSetup implements ServletContextListener {
 	}
 	
 	public WebConfig getConfig() {
-		return new WebConfig();
+		return new WebConfig() {{
+			setVersion(AppClassLoader.getVersion(WebSetup.class));
+		}};
 	}
 
 	/**
@@ -72,6 +74,11 @@ public class WebSetup implements ServletContextListener {
 
 	/**
 	 * Does nothing. Overload to cleanup/detroy resources used by your web application.
+	 * <br>Officially, the logback context should be destroyed 
+	 * (see comments in {@link TomcatShutdownHook#stopLoggerContext()}).
+	 * But since the logback-jars are not loaded as part of the web-app
+	 * (only the resource-jars are), that will close the logger
+	 * before the application exits.
 	 */
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {

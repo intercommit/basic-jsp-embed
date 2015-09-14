@@ -1,9 +1,19 @@
 <%@ include file="/includes/header.jsp" %> 
 <%@ page session="false" %>
 <body>
-<h2>${appName}</h2>
-<div style="font-size:0.8em; float:right">Version ${appVersion}</div>
-<div style="clear:both"></div>
+
+<div style="float:left">
+	<h2>${appName}</h2>
+</div>
+
+<div style="font-size:0.8em; float:right">
+	<br />
+	Version ${appVersion}
+	<br />
+</div>
+
+<div style="clear:left"></div>
+
 <ul><li>
 View <a href="${domainRoot}/log">log</a>
 <a href="${domainRoot}/logerror">error</a> messages.

@@ -18,16 +18,24 @@ import org.slf4j.LoggerFactory;
  * to get information about user/password/roles. The default factory looks inside the Tomcat-work directory.
  * This implementation will look for a "users.xml" file anywhere in the (AppBoot) class-path.
  * <br>
- * Add to the Tomcat launcher {@code beforeStart} with 		
+ * Add to the Tomcat launcher {@code beforeStart()} with 		
  * <pre> 
- 		ContextResource usersDb = new ContextResource();
-		usersDb.setName("MyTomcatUsers");
-		usersDb.setAuth("Container");
-		usersDb.setScope("Shareable");
-		usersDb.setType("org.apache.catalina.UserDatabase");
-		usersDb.setProperty("factory", "com.descartes.basicjsp.embed.MemoryUserDatabaseFactory");
-		usersDb.setProperty("pathName", "users.xml");
-		tomcat.getServer().getGlobalNamingResources().addResource(usersDb);
+tomcat.enableNaming(); // Enable JNDI, required for use of UserDatabaseRealm for security.
+ContextResource usersDb = new ContextResource();
+usersDb.setName("MyTomcatUsers");
+usersDb.setAuth("Container");
+usersDb.setScope("Shareable");
+usersDb.setType("org.apache.catalina.UserDatabase");
+usersDb.setProperty("factory", "com.descartes.basicjsp.embed.MemoryUserDatabaseFactory");
+usersDb.setProperty("pathName", "users.xml");
+tomcat.getServer().getGlobalNamingResources().addResource(usersDb);
+
+org.apache.catalina.realm.UserDatabaseRealm realmDb = new org.apache.catalina.realm.UserDatabaseRealm();
+realmDb.setResourceName("MyTomcatUsers");
+webCtx.setRealm(realmDb);
+
+// or use a "context.xml" and load it with:
+// webCtx.setConfigFile(urlFile);
  * </pre>
  * @author FWiers
  */

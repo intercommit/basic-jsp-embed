@@ -26,13 +26,7 @@ public class Shutdown implements Controller {
 	public String handleRequest(HttpServletRequest request,	HttpServletResponse response) {
 		
 		WebUtil.respondMsg(response, HttpServletResponse.SC_OK, "Shutting down ...", null);
-        if (!LaunchWebApp.stopTomcatFromBoot()) {
-        	// fallback: call system-exit.
-        	new Thread() {
-        		{ setDaemon(true); }
-        		public void run() { System.exit(0); }
-        	}.start();
-        }
+		LaunchWebApp.stopTomcatFromBoot();
         return null;
 	}
 }

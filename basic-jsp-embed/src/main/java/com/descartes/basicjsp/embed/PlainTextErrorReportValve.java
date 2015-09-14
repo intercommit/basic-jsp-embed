@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 /**
  * When you just need plain text error reports, no HTML stuff.
  * <p>
- * Add to the Tomcat launcher {@code beforeStart} with 		
- * <br>((StandardHost) tomcat.getHost()).setErrorReportValveClass(PlainTextErrorReportValve.class.getName());
+ * Add to the Tomcat launcher {@code beforeStart()} with 		
+ * <br>{@code ((StandardHost) tomcat.getHost()).setErrorReportValveClass(PlainTextErrorReportValve.class.getName()); }
  * @author FWiers
  *
  */

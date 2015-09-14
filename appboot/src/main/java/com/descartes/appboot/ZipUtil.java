@@ -90,10 +90,12 @@ public class ZipUtil {
 	public static byte[] getBytes(ZipFile zipFile, ZipEntry entry) throws IOException {
 		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		// InputStream is closed when zipFile is closed.
 		InputStream in = zipFile.getInputStream(entry);
-		int b;
-		while ((b = in.read()) != -1) {
-			bout.write(b);
+		byte[] buf = new byte[8192];
+		int l = 0;
+		while ((l = in.read(buf)) > 0) {
+			bout.write(buf, 0, l);
 		}
 		return bout.toByteArray();
 	}

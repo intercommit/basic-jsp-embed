@@ -9,7 +9,7 @@ import javax.servlet.ServletContextEvent;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 
-import com.descartes.appboot.BootUtil;
+import com.descartes.basicjsp.embed.AppClassLoader;
 import com.descartes.basicjsp.embed.ThreadLocalCleaner;
 import com.descartes.basicjsp.embed.WebConfig;
 import com.descartes.basicjsp.embed.WebSetup;
@@ -40,7 +40,7 @@ public class Setup extends WebSetup {
 	public WebConfig getConfig() {
 		return new WebConfig() {{ 
 				setAppName("JspDemo"); 
-				setVersion(BootUtil.getPomVersion(Setup.class)); 
+				setVersion(AppClassLoader.getVersion(Setup.class)); 
 			}};
 	}
 	

@@ -1,27 +1,10 @@
-/*  Copyright 2013 Descartes Systems Group
-*
-*  This file is part of the "AppBoot" project hosted on https://github.com/intercommit/basic-jsp-embed
-*
-*  AppBoot is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU Lesser General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  any later version.
-*
-*  AppBoot is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with AppBoot.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
 package com.descartes.appboot;
 
 import static com.descartes.appboot.BootKeys.*;
 import static com.descartes.appboot.BootUtil.*;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -134,7 +117,6 @@ public class AppBoot {
 	 * Set to value of {@link BootKeys#APP_MAVEN_TEST_SKIP_CLASSES}.
 	 */
 	public static boolean mavenTestSkipClasses;
-
 	
 	public static String getInfo() {
 		
@@ -204,7 +186,8 @@ public class AppBoot {
 		for (int i = 0; i < appFiles.size(); i++) {
 			appUrls[i] = getUrl(appFiles.get(i));
 		}
-		bootClassLoader = new URLClassLoader(appUrls, Thread.currentThread().getContextClassLoader()); 
+		bootClassLoader = new URLClassLoader(appUrls, Thread.currentThread().getContextClassLoader());
+		System.setProperty(APP_BOOT_CL_HASHCODE, Integer.toString(bootClassLoader.hashCode()));
 		runMain(bootClassLoader, mainClassName, filterAppBootArgs(args));
 	}
 	
@@ -230,6 +213,8 @@ public class AppBoot {
 			// args can be null.
 			Method method = c.getDeclaredMethod(mainMethod, new Class[] {String[].class});
 			method.invoke(null, new Object[] {args});
+		} catch (InvocationTargetException e) {
+			BootUtil.rethrowRuntimeCause(e);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to invoke main method on " + className, e);
 		} finally {
@@ -253,6 +238,26 @@ public class AppBoot {
 	 */
 	public static String getConfDir() {
 		return System.getProperty(APP_CONF_DIR);
+	}
+	
+	/**
+	 * Uses the Thread's context class-loader hierarchy to find the class loader used by appboot
+	 * (lookup is done using the {@link BootKeys#APP_BOOT_CL_HASHCODE} key stored as system property).
+	 * @return The class-loader used by AppBoot or null if not found.
+	 */
+	public static URLClassLoader getAppBootClassLoader() {
+		
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		int hc = 0;
+		try {
+			hc = Integer.valueOf(System.getProperty(APP_BOOT_CL_HASHCODE));
+		} catch (Exception ignored) {
+			return null;
+		}
+		while (cl != null && cl.hashCode() != hc) {
+			cl = cl.getParent();
+		}
+		return (cl == null ? null : cl.hashCode() == hc ? (URLClassLoader) cl : null);
 	}
 
 	/**

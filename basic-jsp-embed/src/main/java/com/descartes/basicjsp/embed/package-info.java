@@ -36,7 +36,7 @@ META-INF/resources
  * To build your own web application project:
  * <br> - copy the dependencies of this project's pom.xml to the new project.
  * <br> - add a dependency to this project (<tt>com.descartes:basic-jsp-embed</tt>)
- * <br> - copy the assembler.xml 
+ * <br> - copy the assembly.xml 
  * <br> - copy the contents from /src/test/resources, /conf and /scripts 
  * <br> - update the run(test)-scripts to use your project's name/main-class.
  * <br> - overload the classes {@link com.descartes.basicjsp.embed.LaunchWebApp},

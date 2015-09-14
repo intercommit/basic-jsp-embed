@@ -1,21 +1,3 @@
-/*  Copyright 2013 Descartes Systems Group
-*
-*  This file is part of the "AppBoot" project hosted on https://github.com/intercommit/basic-jsp-embed
-*
-*  AppBoot is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU Lesser General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  any later version.
-*
-*  AppBoot is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with AppBoot.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
 package com.descartes.appboot;
 
 import static com.descartes.appboot.BootUtil.*;
@@ -60,7 +42,7 @@ public class BootKeys {
 
 	/**
 	 * Can be used in combination with {@link #APP_MAVEN_TEST} to skip adding the "classes" directory
-	 * to the classloader. Not sure when this is usefull.
+	 * to the classloader. Not sure when this is useful.
 	 */
 	public static final String APP_MAVEN_TEST_SKIP_CLASSES = "app.maven.test.skip.classes";
 
@@ -84,6 +66,12 @@ public class BootKeys {
 	 * <br>The determined configuration directory is available as system-property, see also {@link AppBoot#getConfDir()}. 
 	 */
 	public static final String APP_CONF_DIR = "app.conf.dir";
+	
+	/**
+	 * The hash-code of the boot-classloader, set as system property when boot class loader is created.
+	 * See also {@link AppBoot#getAppBootClassLoader()}.
+	 */
+	public static final String APP_BOOT_CL_HASHCODE = "app.boot.classloader.hashcode";
 	
 	/**
 	 * All boot key switches.

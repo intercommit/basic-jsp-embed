@@ -2,9 +2,9 @@ package com.descartes.basicjsp.embed;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.loader.WebappLoader;
@@ -28,9 +28,9 @@ import com.descartes.appboot.BootKeys;
  */
 public class LaunchWebApp {
 
-	public static Logger log = LoggerFactory.getLogger(LaunchWebApp.class);
+	private static final Logger log = LoggerFactory.getLogger(LaunchWebApp.class);
 	
-	private static LaunchWebApp instance;
+	private static volatile LaunchWebApp instance;
 	
 	/** Set per class-loader! See also {@link #stopTomcatFromBoot()} */
 	public static LaunchWebApp getInstance() { return instance; }
@@ -41,11 +41,9 @@ public class LaunchWebApp {
 			new LaunchWebApp().start("", 0);
 		} catch (Exception e) {
 			log.error("Failed to start web application.", e);
+			throw new RuntimeException(e);
 		}
 	}
-	
-	protected TomcatStopper stopThread;
-	protected TomcatShutdownHook stopHook;
 	
 	private boolean mavenTest;
 	private boolean reloadable;
@@ -53,22 +51,27 @@ public class LaunchWebApp {
 	private String webAppDir;
 	private String contextPath;
 	private int portNumber;
+	private long maxWaitStartMs = 1000 * 60 * 5; 
 	
 	protected Tomcat tomcat;
 	protected StandardContext webCtx;
 	protected WebappLoader webLoader;
+	protected TomcatStateListener stateListener;
+	protected TomcatShutdownHook stopHook;
 	
 	/**
-	 * Configures and starts Tomcat, registers a shutdown-hook for Tomcat and starts a {@link TomcatStopper} thread. 
-	 * @param contextPath If none, use an empty string (NOT a <tt>/</tt>), else for example <tt>/mywebapp</tt>.
-	 * @param portNumber for Tomcat. If 0, defaults to 8080.
-	 * @throws Exception
+	 * Configures and starts Tomcat, registers a shutdown-hook for Tomcat.
+	 * The thread calling this method must be a non-daemon thread to keep the JVM from exiting.
+	 * When this method exits, Tomcat has failed to start or has been shutdown and destroyed. 
+	 * @param contextPath If there is none, use an empty string (NOT a <tt>/</tt>), else for example <tt>/mywebapp</tt>.
+	 * @param portNumber The port-number for Tomcat connector to listen on. A value smaller as 1 defaults to 8080.
+	 * @throws Exception When setup or startup fails in an unexpected manner, or when Tomcat server failed to start.
 	 */
 	public void start(String contextPath, int portNumber) throws Exception {
 		
 		instance = this;
 		setContextPath(contextPath);
-		setPortNumber(portNumber == 0 ? 8080 : portNumber);
+		setPortNumber(portNumber < 1 ? 8080 : portNumber);
 		configure();
         log.debug("Using web application directory " + getWebAppDir());
         
@@ -77,8 +80,14 @@ public class LaunchWebApp {
         
         webCtx = (StandardContext) tomcat.addWebapp(getContextPath(), getWebAppDir());
         webCtx.setReloadable(isReloadable());
+        webCtx.setFailCtxIfServletStartFails(true);
 
         webLoader = new WebappLoader(AppBoot.bootClassLoader);
+        
+        // Delegating to parent class-loader would make a method like stopTomcatFromBoot() unnecessary.
+        // But a side effect is that Tomcat will not reload when classes change since the loader does not manage these classes anymore.
+        // webLoader.setDelegate(true);
+        
         // reloadable is copied from context setting.
         webCtx.setLoader(webLoader);
         
@@ -89,18 +98,29 @@ public class LaunchWebApp {
         addResources(webResources);
         
         beforeStart();
-        
         tomcat.start();
         
-        // To stop Tomcat via web-page action.
-        stopThread = new TomcatStopper(tomcat);
-        stopThread.setName("TomcatShutdown");
-        stopThread.start();
+        boolean awaitStart = false;
+        try {
+        	awaitStart = stateListener.tomcatServerStarted.await(maxWaitStartMs, TimeUnit.MILLISECONDS);
+        } catch (Exception ignored) { 
+        	log.debug("Waiting for Tomcat server start interrupted.");
+        }
+        if (!awaitStart || stateListener.isFailedStart()) {
+        	try {
+        		afterStart(false);
+        	} finally {
+        		stopHook.run();
+        	}
+        	throw new RuntimeException("Tomcat server failed to start properly, please examine log-files.");
+        }
         // To stop Tomcat when JVM receives terminate signal
-        Runtime.getRuntime().addShutdownHook(stopHook = new TomcatShutdownHook(stopThread));
-        
+        Runtime.getRuntime().addShutdownHook(stopHook);
+    	afterStart(true);
+
         if (tomcat.getServer().getPort() > -1) {
-        	log.info("Embedded Tomcat listening on port " + tomcat.getServer().getPort() + " for shutdown command " + tomcat.getServer().getShutdown());
+        	log.info("Tomcat listening for shutdown command [" + tomcat.getServer().getShutdown() 
+        			+ "] on port " + tomcat.getServer().getPort());
         }
         if (isOpenBrowser() && Desktop.isDesktopSupported()) {
         	String indexUrl = tomcat.getConnector().getScheme() + "://localhost:" + getPortNumber() + getContextPath();
@@ -110,6 +130,14 @@ public class LaunchWebApp {
         		log.debug("Could not browse to " + indexUrl, e);
         	}
         }
+        // Keep this non-daemon thread alive, else the JVM will exit.
+        try {
+        	stateListener.tomcatServerDestroyed.await();
+            log.debug("Tomcat server stopped and destroyed.");
+        } catch (InterruptedException ie) {
+        	log.error("Interrupted while waiting for Tomcat server to stop.");
+        }
+        // JVM will exit, triggering the stopHook if "stopTomcat()" was not called.
 	}
 	
 	/**
@@ -119,8 +147,8 @@ public class LaunchWebApp {
 	public void configure() {
 		
 		setMavenTest(System.getProperties().containsKey(BootKeys.APP_MAVEN_TEST));
-		setReloadable(true);
 		if (isMavenTest()) {
+			setReloadable(true);
 			setOpenBrowser(true);
 			setWebAppDir(getMavenClassesDir() + File.separator + "META-INF" + File.separator + "resources");
 		} else {
@@ -142,6 +170,13 @@ public class LaunchWebApp {
 		System.setProperty(org.apache.tomcat.util.scan.Constants.SKIP_JARS_PROPERTY, exclude);
 	}
 	
+	/**
+	 * Called from {@link #start(String, int)} before {@link #beforeStart()}
+	 * to register the resources used by the web-application.
+	 * <br>If in Maven test environment, registers the classes-directory
+	 * as resource, else calls {@link #addResourceJar(StandardRoot, Class)} with the class from {@link #getInstance()}. 
+	 * @param webResources
+	 */
 	public void addResources(StandardRoot webResources) {
 		
 		if (isMavenTest()) {
@@ -157,10 +192,16 @@ public class LaunchWebApp {
 	
 	/**
 	 * Adds the jar containing the given class as a {@link JarResourceSet} (internal path is set to "/META-INF/resources").
+	 * See also {@link #addResources(StandardRoot)}.
 	 */
 	public void addResourceJar(StandardRoot webResources, Class<?> classInJar) {
 		
-		File jarFile = new File(classInJar.getProtectionDomain().getCodeSource().getLocation().getFile());
+		File jarFile = null;
+		try {
+			jarFile = new File(classInJar.getProtectionDomain().getCodeSource().getLocation().getFile());
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to find jar-file for class " + classInJar, e);
+		}
 		log.debug("Adding resource jar file " + jarFile);
 		JarResourceSet jr = new JarResourceSet(webResources, "/", jarFile.getAbsolutePath(), "/META-INF/resources");
 		webResources.addJarResources(jr);
@@ -180,12 +221,29 @@ public class LaunchWebApp {
 	}
 	
 	/**
-	 * Called before Tomcat is started, use to setup security etc.
-	 * Does nothing by default.
+	 * Called before Tomcat is started, creates and initializes the Tomcat state listener and Tomcat shutdown hook.
+	 * Can be overloaded to setup security etc. (see also {@link com.descartes.basicjsp.embed.ssl}),
+	 * in which case it is a good idea to call <tt>super.beforeStart()</tt>.
+	 * <br>Example adding an AJP-connector (configured via Apache2 mod-jk):
+	 * <pre><code>Connector c = new Connector("AJP/1.3"); 
+c.setPort(8009);
+tomcat.getService().addConnector(c);
+super.beforeStart();</code></pre>
+	 * 
 	 */
 	public void beforeStart() {
 		
+        stateListener = new TomcatStateListener(tomcat);
+        // stateListener.logVerbose = true;
+        stateListener.init();
+        stopHook = new TomcatShutdownHook(tomcat, stateListener.tomcatServerDestroyed);
 	}
+	
+	/**
+	 * Called after Tomcat has started. Does nothing by default.
+	 * @param startOk true if Tomcat server started OK. If false, the start-method will throw a RuntimeException after calling this method.
+	 */
+	public void afterStart(boolean startOk) {}
 	
 	/**
 	 * Only use when {@link #isMavenTest()} returns true.
@@ -196,53 +254,42 @@ public class LaunchWebApp {
 	}
 	
 	/**
-	 * Triggers the {@link TomcatStopper} to continue running (which causes Tomcat to stop).
+	 * Starts the {@link TomcatShutdownHook} thread which stops Tomcat.
+	 * This is an async-method (will return before Tomcat has actually stopped).
+	 * If no {@link TomcatShutdownHook} is available, the {@link #stopTomcatFromBoot()} method
+	 * is used to find the instance of this class that does have the shutdown-hook.
+	 * <br>See also {@link #stopTomcatFromBoot()}.
 	 */
 	public void stopTomcat() {
 		
-		if (stopThread != null) {
-			stopThread.stopTomcatAsync();
+		if (stopHook == null) {
+			if (getInstance() == null) {
+				stopTomcatFromBoot();
+			} else {
+				log.info("Cannot stop Tomcat: there is no Tomcat shutdown hook set.");
+			}
+		} else {
+			Runtime.getRuntime().removeShutdownHook(stopHook);
+			stopHook.start();
 		}
 	}
-	
+
 	/**
-	 * Stops Tomcat via the instance of this class that started Tomcat.
-	 * <br>Tomcat was started using this class loaded via the boot class loader. 
-	 * The shutdown-servlet runs in the Tomcat's class loader which resets {@link #getInstance()} to null.
-	 * This method uses reflection to get this class loaded via the boot class loader (which has instance set to non-null)
-	 * and call the {@link #stopTomcat()} method.
+	 * Uses {@link AppClassLoader} to call {@link #stopTomcat()} on the boot-loaded instance of this class.
 	 * @return true if Tomcat shutdown was called, false on error.
 	 */
 	public static boolean stopTomcatFromBoot() {
 		
-		if (getInstance() != null) {
-			log.debug("LaunchWebApp instance found.");
-			getInstance().stopTomcat();
-			return true;
-		}
 		boolean tomcatStopped = false;
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		if (cl.getParent() != null) {
-			log.debug("Using webapp parent classloader.");
-			cl = cl.getParent();
-		} else {
-			log.debug("Using system classloader.");
-			cl = ClassLoader.getSystemClassLoader();
-		}
         try {
-        	Class<?> wac = cl.loadClass(LaunchWebApp.class.getName());
-        	Method minstance = wac.getMethod("getInstance", (Class<?>[]) null);
-        	Method mshutdown = wac.getMethod("stopTomcat", (Class<?>[]) null);
-        	Object o = minstance.invoke((Object[]) null, (Object[]) null);
-        	// Object o cannot be cast to this class, that gives a ClassCastException due to conflicting class loaders.  
-        	mshutdown.invoke(o, (Object[]) null);
-        	tomcatStopped = true;
+        	AppClassLoader.invokeOnInstance(AppClassLoader.getInstance(LaunchWebApp.class.getName()), "stopTomcat");
+    		tomcatStopped = true;
         } catch (Exception e) {
-        	log.error("Could not call shutdown from " + LaunchWebApp.class.getSimpleName() + " from boot class loader.", e);
+        	log.error("Could not call shutdown from boot class loader.", e);
         }
         return tomcatStopped;
 	}
-
+	
 	/* *** bean methods *** */
 	
 	public boolean isMavenTest() {
@@ -283,6 +330,16 @@ public class LaunchWebApp {
 
 	public void setPortNumber(int portNumber) {
 		this.portNumber = portNumber;
+	}
+
+	/** See {@link LaunchWebApp#setMaxWaitStartMs(long)} */
+	public long getMaxWaitStartMs() {
+		return maxWaitStartMs;
+	}
+
+	/** Maximum time in miliseconds to wait for the Tomcat server to start. Default 5 minutes. */
+	public void setMaxWaitStartMs(long maxWaitStartMs) {
+		this.maxWaitStartMs = maxWaitStartMs;
 	}
 
 	public boolean isOpenBrowser() {

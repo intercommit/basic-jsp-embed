@@ -1,21 +1,3 @@
-/*  Copyright 2013 Descartes Systems Group
-*
-*  This file is part of the "AppBoot" project hosted on https://github.com/intercommit/basic-jsp-embed
-*
-*  AppBoot is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU Lesser General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  any later version.
-*
-*  AppBoot is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU Lesser General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public License
-*  along with AppBoot.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
 package com.descartes.appboot;
 
 import java.io.Closeable;
@@ -43,6 +25,36 @@ public class BootUtil {
 	public static String UNKNOWN_VERSION = "unknown";
 	
 	private BootUtil() {}
+
+	/**
+	 * Rethrows the root-cause of te given exception as a runtime-exception
+	 * using the stack-trace and message of the root-cause.
+	 * <br>An instance of {@link Error} is always re-thrown directly.
+	 */
+	public static void rethrowRuntimeCause(Throwable e) {
+		
+		if (e instanceof Error) {
+			throw (Error) e;
+		}
+		Throwable cause = e;
+		Set<Throwable> causes = new HashSet<Throwable>();
+		causes.add(cause);
+		while (cause.getCause() != null && !causes.contains(causes)) {
+			cause = cause.getCause();
+			causes.add(cause);
+		}
+		String msg = cause.getMessage();
+		if (!cause.getClass().equals(RuntimeException.class)) {
+			if (msg == null) { // the case for NullPointerException
+				msg = cause.getClass().getSimpleName();
+			} else {
+				msg = cause.getClass().getSimpleName() + " - " + msg;
+			}
+		}
+		RuntimeException re = new RuntimeException(msg);
+		re.setStackTrace(cause.getStackTrace());
+		throw re;
+	}
 
 	/**
 	 * Returns true if the prop exists as parameter in args 
@@ -126,7 +138,7 @@ public class BootUtil {
 	
 	/**
 	 * Reads the "version" in "META-INF/.../pom.properties" in the jar-file of the given class.
-	 * @return the found version of {@link #UNKNOWN_VERSION}.
+	 * @return the found version or {@link #UNKNOWN_VERSION}.
 	 */
 	public static String getPomVersion(Class<?> clazz) {
 		
