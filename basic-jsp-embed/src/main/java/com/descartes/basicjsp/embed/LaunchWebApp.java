@@ -6,8 +6,10 @@ import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.loader.WebappLoader;
+import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.DirResourceSet;
 import org.apache.catalina.webresources.JarResourceSet;
@@ -238,7 +240,41 @@ super.beforeStart();</code></pre>
         stateListener.init();
         stopHook = new TomcatShutdownHook(tomcat, stateListener.tomcatServerDestroyed);
 	}
-	
+
+	/**
+	 * Tomcat will save/restore sessions between restarts. 
+	 * This can cause errors like:
+	 * <br><code>Caused by: java.io.NotSerializableException: java.lang.Object</code>.
+	 * <br>Call this method from {@link #beforeStart()} to disable session persistence.
+	 */
+	public void disableSessionPersistence() {
+		
+		Container[] hostChilds = tomcat.getHost().findChildren();
+		int disabled = 0;
+		for (Container c : hostChilds) {
+			if (c instanceof StandardContext) {
+				StandardContext sc = (StandardContext) c;
+				if (sc.getManager() == null) {
+					log.debug("No context manager available, adding standard manager with session persistence disabled.");
+					StandardManager sm = new StandardManager();
+					sm.setPathname(null);
+					sc.setManager(sm);
+					disabled++;
+				} else if (sc.getManager() instanceof StandardManager) {
+					StandardManager sm = (StandardManager) sc.getManager(); 
+					sm.setPathname(null);
+					log.debug("Disabled session persistence for context manager.");
+					disabled++;
+				} else {
+					log.debug("Unable to disable session persistence for context manager of unknown class.");
+				}
+			}
+		}
+		if (disabled == 0) {
+			log.info("Unable to disable session persistence in context manager.");
+		}
+	}
+
 	/**
 	 * Called after Tomcat has started. Does nothing by default.
 	 * @param startOk true if Tomcat server started OK. If false, the start-method will throw a RuntimeException after calling this method.

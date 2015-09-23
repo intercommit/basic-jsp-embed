@@ -8,7 +8,7 @@
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>basic-jsp-embed</artifactId>
-	<version>1.3.0.GH</version>
+	<version>1.3.1.GH-SNAPSHOT</version>
 	<name>Embedded Basic JSP web application</name>
 
 	<properties>
