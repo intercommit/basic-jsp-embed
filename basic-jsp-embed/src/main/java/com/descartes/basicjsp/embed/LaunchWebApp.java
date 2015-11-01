@@ -7,13 +7,11 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.session.StandardManager;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.catalina.webresources.DirResourceSet;
-import org.apache.catalina.webresources.JarResourceSet;
-import org.apache.catalina.webresources.StandardRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +21,7 @@ import com.descartes.appboot.BootKeys;
 /**
  * Main class to start the web application.
  * Extend this class and set it as main class in your pom for the maven-jar-plugin.
- * Override the {@link #configure()}, {@link #addResources(StandardRoot)} and {@link #beforeStart()}
+ * Override the {@link #configure()}, {@link #createAppResources()} and {@link #beforeStart()}
  * functions to customize your web-app (see also basic-jsp-embed-demo project). 
  * @author fwiers
  *
@@ -92,12 +90,10 @@ public class LaunchWebApp {
         
         // reloadable is copied from context setting.
         webCtx.setLoader(webLoader);
-        
         log.info("Reloading loader: " + webLoader.getReloadable());
         
-        StandardRoot webResources = new StandardRoot();
+        WebResourceRoot webResources = createResourceRoot();
         webCtx.setResources(webResources);
-        addResources(webResources);
         
         beforeStart();
         tomcat.start();
@@ -152,7 +148,7 @@ public class LaunchWebApp {
 		if (isMavenTest()) {
 			setReloadable(true);
 			setOpenBrowser(true);
-			setWebAppDir(getMavenClassesDir() + File.separator + "META-INF" + File.separator + "resources");
+			setWebAppDir(getMavenClassesDir());
 		} else {
 			setWebAppDir(AppBoot.getHomeDir());
 		}
@@ -173,57 +169,28 @@ public class LaunchWebApp {
 	}
 	
 	/**
-	 * Called from {@link #start(String, int)} before {@link #beforeStart()}
-	 * to register the resources used by the web-application.
-	 * <br>If in Maven test environment, registers the classes-directory
-	 * as resource, else calls {@link #addResourceJar(StandardRoot, Class)} with the class from {@link #getInstance()}. 
-	 * @param webResources
+	 * Called by the {@link #start(String, int)} method after {@link #configure()} and before the {@link #beforeStart()} method.
+	 * <br>This method calls {@link #createResourceRoot()} for configuration.
+	 * @return By default, returns an instance of {@link TomcatStandardRoot}.
 	 */
-	public void addResources(StandardRoot webResources) {
-		
-		if (isMavenTest()) {
-	    	String classesDir = getMavenClassesDir();
-	    	log.debug("Restarting web application when classes change in " + classesDir);
-	    	// Note: only changes for classes loaded by Tomcat are seen by Tomcat.
-	    	DirResourceSet dr = new DirResourceSet(webResources, "/WEB-INF/classes", classesDir, "/");
-	    	webResources.addPostResources(dr);
-		} else {
-			addResourceJar(webResources, getInstance().getClass());
-		}
+	public WebResourceRoot createResourceRoot() {
+		return new TomcatStandardRoot(createAppResources());
 	}
 	
 	/**
-	 * Adds the jar containing the given class as a {@link JarResourceSet} (internal path is set to "/META-INF/resources").
-	 * See also {@link #addResources(StandardRoot)}.
+	 * Called by {@link #createResourceRoot()}. By default this method creates a {@link WebResourcePaths}
+	 * instance with a Maven classes directory if {@link #isMavenTest()} is true, 
+	 * else it sets the main-jar using the class from {@link #getInstance()}. 
 	 */
-	public void addResourceJar(StandardRoot webResources, Class<?> classInJar) {
+	public WebResourcePaths createAppResources() {
 		
-		File jarFile = null;
-		try {
-			jarFile = new File(classInJar.getProtectionDomain().getCodeSource().getLocation().getFile());
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to find jar-file for class " + classInJar, e);
-		}
-		log.debug("Adding resource jar file " + jarFile);
-		JarResourceSet jr = new JarResourceSet(webResources, "/", jarFile.getAbsolutePath(), "/META-INF/resources");
-		webResources.addJarResources(jr);
-	}
-	
-	/**
-	 * Adds the libDir as a {@link DirResourceSet} (internal path is set to "/WEB-INF/lib").
-	 * This is only needed when web-app should reload when a jar changes
-	 * ({@link AppBoot} will already serve classes within the jars to Tomcat). 
-	 * <br>WARNING: can have strange side-effects and reloading appears to be broken (webapp is stopped but not started).
-	 */
-	public void addResourceLibDir(StandardRoot webResources, String libDir) {
-		
-		log.debug("Adding resource lib directory " + libDir);
-		DirResourceSet dr = new DirResourceSet(webResources, "/WEB-INF/lib", libDir, "/");
-		webResources.addPostResources(dr);
+		WebResourcePaths wrj = (isMavenTest() ? new WebResourcePaths(getMavenClassesDir()) : new WebResourcePaths(getInstance().getClass()));
+		return wrj;
 	}
 	
 	/**
 	 * Called before Tomcat is started, creates and initializes the Tomcat state listener and Tomcat shutdown hook.
+	 * Also disables session persistence between restarts.
 	 * Can be overloaded to setup security etc. (see also {@link com.descartes.basicjsp.embed.ssl}),
 	 * in which case it is a good idea to call <tt>super.beforeStart()</tt>.
 	 * <br>Example adding an AJP-connector (configured via Apache2 mod-jk):
@@ -240,7 +207,7 @@ super.beforeStart();</code></pre>
         stateListener.init();
         stopHook = new TomcatShutdownHook(tomcat, stateListener.tomcatServerDestroyed);
 	}
-
+	
 	/**
 	 * Tomcat will save/restore sessions between restarts. 
 	 * This can cause errors like:
@@ -274,7 +241,7 @@ super.beforeStart();</code></pre>
 			log.info("Unable to disable session persistence in context manager.");
 		}
 	}
-
+	
 	/**
 	 * Called after Tomcat has started. Does nothing by default.
 	 * @param startOk true if Tomcat server started OK. If false, the start-method will throw a RuntimeException after calling this method.

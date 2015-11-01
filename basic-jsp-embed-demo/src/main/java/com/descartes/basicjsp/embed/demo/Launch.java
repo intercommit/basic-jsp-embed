@@ -1,10 +1,10 @@
 package com.descartes.basicjsp.embed.demo;
 
-import org.apache.catalina.webresources.StandardRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.descartes.basicjsp.embed.LaunchWebApp;
+import com.descartes.basicjsp.embed.WebResourcePaths;
 
 public class Launch extends LaunchWebApp {
 	
@@ -21,10 +21,12 @@ public class Launch extends LaunchWebApp {
 	}
 
 	@Override
-	public void addResources(StandardRoot webResources) {
+	public WebResourcePaths createAppResources() {
 		
-		super.addResources(webResources);
-		addResourceJar(webResources, LaunchWebApp.class);
+		WebResourcePaths wrj = super.createAppResources();
+		// enable re-use of pages and resources from basic-jsp-embed
+		wrj.addWebJarPath(LaunchWebApp.class);
+		return wrj;
 	}
 
 }

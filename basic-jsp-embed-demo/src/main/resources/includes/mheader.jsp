@@ -5,9 +5,9 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<c:set var="domainRoot" value="${pageContext.request.contextPath}" />
+<c:set var="domainRoot" value="${pageContext.request.contextPath}" scope="request"/>
 <link rel="shortcut icon" href="${domainRoot}/favicon.ico"/>
-<link rel="stylesheet" type="text/css" href="${domainRoot}/static/app.css">
+<link rel="stylesheet" href="${domainRoot}/static/app.css" type="text/css">
 <link rel="stylesheet" type="text/css" href="${domainRoot}/static/chartportlet.css">
 <link rel="stylesheet" type="text/css" href="${domainRoot}/static/jquery-ui-1.11.2/jquery-ui.min.css">
 <!-- 

@@ -10,9 +10,9 @@ Domain root is required for retrieving static resources.
 See also 
 http://stackoverflow.com/questions/3655316/browser-cant-access-find-relative-resources-like-css-images-and-links-when-cal
  --%>
-<c:set var="domainRoot" value="${pageContext.request.contextPath}" />
-<link rel="stylesheet" href="${domainRoot}/static/app.css" type="text/css">
+<c:set var="domainRoot" value="${pageContext.request.contextPath}" scope="request"/>
 <link rel="shortcut icon" href="${domainRoot}/favicon.ico"/>
+<link rel="stylesheet" href="${domainRoot}/static/app.css" type="text/css">
 <c:choose>
 <c:when test="${empty pageTitle}">
 <title>Home [${appName}]</title>

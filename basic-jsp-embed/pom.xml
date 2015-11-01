@@ -8,12 +8,12 @@
 		<relativePath>../basic-jsp-embed-parent</relativePath>
 	</parent>
 	<artifactId>basic-jsp-embed</artifactId>
-	<version>1.3.1.GH-SNAPSHOT</version>
+	<version>1.4.0.GH-SNAPSHOT</version>
 	<name>Embedded Basic JSP web application</name>
 
 	<properties>
 		<manifest.main>com.descartes.basicjsp.embed.LaunchWebApp</manifest.main>
-		<tomcat.version>8.0.26</tomcat.version>
+		<tomcat.version>8.0.28</tomcat.version>
 	</properties>
 
 	<dependencies>

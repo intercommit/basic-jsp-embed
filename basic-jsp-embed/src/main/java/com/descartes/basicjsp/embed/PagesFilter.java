@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * <br>Any other paths are pre-fixed with <tt>/pages</tt> and forwared to the jsp-pages servlet 
  * that is registered in <tt>web.xml</tt> with url-pattern <tt>/pages/*</tt>.
  * <p>
- * Copied from http://stackoverflow.com/questions/132052/servlet-for-serving-static-content
+ * Copied from http://stackoverflow.com/a/3593513
  * <p>
  * Register this class in <tt>web.xml</tt> in the following manner:
 <pre>&lt;filter&gt;
