@@ -170,7 +170,7 @@ public class LaunchWebApp {
 	
 	/**
 	 * Called by the {@link #start(String, int)} method after {@link #configure()} and before the {@link #beforeStart()} method.
-	 * <br>This method calls {@link #createResourceRoot()} for configuration.
+	 * <br>This method calls {@link #createAppResources()} for configuration.
 	 * @return By default, returns an instance of {@link TomcatStandardRoot}.
 	 */
 	public WebResourceRoot createResourceRoot() {
