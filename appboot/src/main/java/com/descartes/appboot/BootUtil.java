@@ -37,20 +37,19 @@ public class BootUtil {
 			throw (Error) e;
 		}
 		Throwable cause = e;
-		Set<Throwable> causes = new HashSet<Throwable>();
-		causes.add(cause);
-		while (cause.getCause() != null && !causes.contains(causes)) {
-			cause = cause.getCause();
+		if (cause.getCause() != null && cause.getCause() != cause) {
+			Set<Throwable> causes = new HashSet<Throwable>();
 			causes.add(cause);
-		}
-		String msg = cause.getMessage();
-		if (!cause.getClass().equals(RuntimeException.class)) {
-			if (msg == null) { // the case for NullPointerException
-				msg = cause.getClass().getSimpleName();
-			} else {
-				msg = cause.getClass().getSimpleName() + " - " + msg;
+			while (cause.getCause() != null && !causes.contains(cause.getCause())) {
+				cause = cause.getCause();
+				causes.add(cause);
 			}
 		}
+		if (cause instanceof RuntimeException) {
+			throw (RuntimeException) cause;
+		}
+		String msg = cause.getClass().getSimpleName() + 
+				(cause.getMessage() == null ? "" : " - " + cause.getMessage());
 		RuntimeException re = new RuntimeException(msg);
 		re.setStackTrace(cause.getStackTrace());
 		throw re;

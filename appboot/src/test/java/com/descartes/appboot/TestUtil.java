@@ -43,4 +43,25 @@ public class TestUtil {
 		
 		assertEquals(0, BootKeys.filterAppBootArgs(args).length);
 	}
+	
+	@Test
+	public void testRethrow() {
+		
+		Exception e1 = new Exception("E1");
+		Exception e2 = new Exception("E2", e1);
+		Exception e3 = new Exception("E3", e2);
+		e1.initCause(e3);
+		try {
+			BootUtil.rethrowRuntimeCause(e3);
+		} catch (Exception e) {
+			// e.printStackTrace();
+			assertNull(e.getCause());
+			assertTrue(e instanceof RuntimeException);
+			assertEquals("Exception - E1", e.getMessage());
+			// assertEquals(e1, e.getCause());
+			// System.out.println(e.toString() + " / " + e.getCause());
+		}
+		// System.out.println(e1.getClass().getName());
+	}
+
 }

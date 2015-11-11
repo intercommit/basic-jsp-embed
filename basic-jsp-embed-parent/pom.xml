@@ -3,14 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.descartes</groupId>
 	<artifactId>basic-jsp-embed-parent</artifactId>
-	<version>1.3.0.GH</version>
+	<version>1.4.0.GH</version>
 	<packaging>pom</packaging>
 
 	<name>Basic JSP embedded Parent</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<appboot.version>1.1.3.GH</appboot.version>
+		<appboot.version>1.1.5.GH</appboot.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<logback.version>1.1.3</logback.version>
 	</properties>
