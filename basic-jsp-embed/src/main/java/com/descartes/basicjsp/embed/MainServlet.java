@@ -29,6 +29,12 @@ import com.descartes.basicjsp.embed.controller.SysEnv;
 @SuppressWarnings("serial")
 public class MainServlet extends HttpServlet {
 	
+	/**
+	 * The request URI for a web-app context changed between Tomcat 8.0.28 and 8.0.30.
+	 * The request URI no longer ends with a / which can result in an empty page-path
+	 * for which the home-page should show (similar to {@link #PATH_HOME_ROOT}).
+	 */
+	public static final String PATH_HOME_EMPTY = "";
 	public static final String PATH_HOME_ROOT = "/";
 	public static final String PATH_HOME_HOME = "/home";
 	public static final String PATH_HOME_INDEX = "/index";
@@ -56,10 +62,7 @@ public class MainServlet extends HttpServlet {
 	 */
 	protected void buildControllerFactories() {
 		
-		ControllerFactorySingleton homeFactory = new ControllerFactorySingleton(Home.getInstance()); 
-		controllerFactories.put(PATH_HOME_ROOT, homeFactory);
-		controllerFactories.put(PATH_HOME_HOME, homeFactory);
-		controllerFactories.put(PATH_HOME_INDEX, homeFactory);
+		registerHomeControllerFactory(new ControllerFactorySingleton(Home.getInstance()));
 		ControllerFactorySingleton logFactory = new ControllerFactorySingleton(Log.getInstance()); 
 		controllerFactories.put(PATH_LOG, logFactory);
 		controllerFactories.put(PATH_LOG_ERROR, logFactory);
@@ -69,6 +72,25 @@ public class MainServlet extends HttpServlet {
 	
 	protected Map<String, ControllerFactory> getControllerFactories() {
 		return controllerFactories;
+	}
+
+	/**
+	 * Utility method: registers the given factory for all for home-paths
+	 * {@link #PATH_HOME_EMPTY}, {@link #PATH_HOME_ROOT}, {@link #PATH_HOME_INDEX} and {@link #PATH_HOME_HOME}.
+	 */
+	protected void registerHomeControllerFactory(ControllerFactory homeFactory) {
+		registerControllerFactory(homeFactory, PATH_HOME_EMPTY, PATH_HOME_ROOT, PATH_HOME_HOME, PATH_HOME_INDEX);
+	}
+
+	/**
+	 * Utility method: register the given factory for all for paths.
+	 * See also {@link #registerHomeControllerFactory(ControllerFactory)}.
+	 */
+	protected void registerControllerFactory(ControllerFactory factory, String... paths) {
+		
+		for (String p : paths) {
+			controllerFactories.put(p, factory);
+		}
 	}
 
 	/**

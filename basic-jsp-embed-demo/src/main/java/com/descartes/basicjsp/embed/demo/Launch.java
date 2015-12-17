@@ -13,7 +13,7 @@ public class Launch extends LaunchWebApp {
 	public static void main(String[] args) {
 		
 		try {
-			new Launch().start("", 0);
+			new Launch().start("/demo", 0);
 		} catch (Exception e) {
 			log.error("Failed to start web application.", e);
 			throw new RuntimeException(e);

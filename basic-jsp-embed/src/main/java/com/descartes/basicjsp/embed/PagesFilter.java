@@ -51,6 +51,8 @@ public class PagesFilter implements Filter {
 			FilterChain chain) throws IOException, ServletException {
 		
 		HttpServletRequest req = (HttpServletRequest) request;
+		// The request URI changed from Tomcat version 8.0.28 to 8.0.30:
+		// the URI used to end with a / but this does not happen with later versions.
 		String path = req.getRequestURI().substring(req.getContextPath().length());
 		if (log.isDebugEnabled()) {
 			log.debug("Filtering for " + path);
