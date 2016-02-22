@@ -3,14 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.descartes</groupId>
 	<artifactId>basic-jsp-embed-parent</artifactId>
-	<version>1.4.1.GH</version>
+	<version>1.4.2.GH</version>
 	<packaging>pom</packaging>
 
 	<name>Basic JSP embedded Parent</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<appboot.version>1.1.5.GH</appboot.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<logback.version>1.1.3</logback.version>
 		<log4j2.version>2.5</log4j2.version>
@@ -111,7 +110,7 @@
 			<plugins>
 				<plugin>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>2.6.1</version>
+					<version>3.0.0</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-resources-plugin</artifactId>
@@ -123,7 +122,7 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.3</version>
+					<version>3.5</version>
 					<configuration>
 						<debug>true</debug>
 						<optimize>true</optimize>
@@ -135,7 +134,7 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.18.1</version>
+					<version>2.19.1</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-jar-plugin</artifactId>
@@ -181,7 +180,7 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.5.5</version>
+					<version>2.6</version>
 					<configuration>
 						<attach>false</attach>
 					</configuration>
