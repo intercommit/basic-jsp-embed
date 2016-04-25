@@ -7,6 +7,7 @@ import com.descartes.basicjsp.embed.demo.controller.DirTree;
 import com.descartes.basicjsp.embed.demo.controller.JmxInfo;
 import com.descartes.basicjsp.embed.demo.controller.JmxMonitor;
 import com.descartes.basicjsp.embed.demo.controller.OpenFile;
+import com.descartes.basicjsp.embed.demo.controller.WsEcho;
 
 @SuppressWarnings("serial")
 public class Servlet extends MainServlet {
@@ -20,6 +21,7 @@ public class Servlet extends MainServlet {
 		controllerFactories.put("/openfile", new ControllerFactorySingleton(new OpenFile()));
 		controllerFactories.put("/monitor", new ControllerFactorySingleton(new JmxMonitor()));
 		controllerFactories.put("/jmxinfo", new ControllerFactorySingleton(new JmxInfo()));
+		controllerFactories.put("/wsecho", new ControllerFactorySingleton(new WsEcho()));
 	}
 
 }

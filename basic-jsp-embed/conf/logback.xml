@@ -8,16 +8,14 @@
 	<appender name="FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>${log.name}.log</file>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
 			<!-- daily rollover with gz compression for old log-files -->
-			<fileNamePattern>${log.name}.%d.log.gz</fileNamePattern>
-			<!-- keep 7 days' worth of history -->
+			<fileNamePattern>${log.name}.%d.%i.log.gz</fileNamePattern>
 			<maxHistory>7</maxHistory>
-			<timeBasedFileNamingAndTriggeringPolicy
-            	class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-        		<!-- or whenever the file size reaches 100MB -->
-        		<maxFileSize>100MB</maxFileSize>
-      		</timeBasedFileNamingAndTriggeringPolicy>
+			<maxFileSize>100MB</maxFileSize>
+			<cleanHistoryOnStart>true</cleanHistoryOnStart>
+			<totalSizeCap>1GB</totalSizeCap>
 		</rollingPolicy>
 		<encoder>
 			<pattern>%d{dd HH:mm:ss:SSS} %-5level %logger{35} - %msg%n</pattern>

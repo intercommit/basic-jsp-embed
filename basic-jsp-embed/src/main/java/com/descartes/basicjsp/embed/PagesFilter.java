@@ -40,6 +40,7 @@ public class PagesFilter implements Filter {
 
 	public static String PAGES_PATH = "/pages";
 	public static String STATIC_PATH = "/static";
+	public static String WEBSOCKET_PATH = "/websocket";
 	
 	protected Logger log = LoggerFactory.getLogger(getClass());
 
@@ -57,7 +58,7 @@ public class PagesFilter implements Filter {
 		if (log.isDebugEnabled()) {
 			log.debug("Filtering for " + path);
 		}
-		if (path.startsWith(STATIC_PATH) || path.startsWith("/favicon.ico")) {
+		if (path.startsWith(STATIC_PATH) || path.startsWith(WEBSOCKET_PATH) || path.startsWith("/favicon.ico")) {
 			// Allthough "/favicon.ico" should not occur, it happens when in browser Back is clicked.
 			chain.doFilter(request, response); // Goes to default servlet.
 		} else {

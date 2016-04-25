@@ -11,6 +11,7 @@ Demo for Basic JSP Embedded
 <br>Show performance <a href="${domainRoot}/monitor">monitor</a>
 (uses the <a href="http://jolokia.org">Jolokia</a> JMX <a href="${domainRoot}/jmxagent">agent</a>).
 <br>Show JMX server <a href="${domainRoot}/jmxinfo">info</a>
+<br>Test a Websocket <a href="${domainRoot}/wsecho">echo</a> function.
 <br>
 <br>Inherited from the Basic JSP Embed project:
 <ul><li>
